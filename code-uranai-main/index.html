@@ -1,0 +1,2622 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6565273593420932"
+     crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ぽよぽよシステム仕様書 🍬 〜ふしぎなぶどう畑〜</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
+
+    :root {
+      --candy-pink: #ffb7d5;
+      --candy-purple: #cbb4ff;
+      --grape-purple: #9d7fe6;
+      --frog-green: #79d890;
+      --cream-soft: #fff9e6;
+      --candy-yellow: #ffeaa7;
+      --text-color: #594a63;
+      --alert-pink: #ff7675;
+    }
+
+    body {
+      background: linear-gradient(180deg, rgba(255, 191, 224, 0.08) 0%, rgba(216, 181, 255, 0.08) 50%, rgba(196, 181, 255, 0.08) 100%);
+      min-height: 100vh;
+      color: var(--text-color);
+      font-family: 'M PLUS Rounded 1c', "Hiragino Maru Gothic ProN", Meiryo, sans-serif;
+      margin: 0;
+      padding: 20px 10px 40px 10px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      box-sizing: border-box;
+      position: relative;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+
+    /* === 4段タイル背景グリッド（PC用） === */
+    #mosaicBg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 20px;
+      padding: 15px;
+      box-sizing: border-box;
+      pointer-events: none;
+      opacity: 0.92;
+    }
+    @media (max-width: 768px) {
+      #mosaicBg {
+        display: none;
+      }
+    }
+    .mosaic-tile {
+      width: 100%;
+      height: 100%;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      border-radius: 16px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+    }
+
+    /* BGMコントローラー（右上固定） */
+    .bgm-control-panel {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 3px dashed #ff9ac9;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #7b4397;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 10px rgba(162, 114, 219, 0.2);
+      z-index: 1000;
+    }
+    .bgm-toggle-btn {
+      background: #ffb7d5;
+      border: 2px solid #ff75ac;
+      border-radius: 12px;
+      color: #fff;
+      font-weight: bold;
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .bgm-toggle-btn:hover {
+      background: #ff9ac9;
+    }
+
+    /* === ☰ ハンバーガーメニュー（左上固定） === */
+    .menu-fixed-btn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 3px dashed #ff9ac9;
+      border-radius: 16px;
+      padding: 6px 12px;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #7b4397;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(162, 114, 219, 0.2);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: inherit;
+    }
+    .menu-fixed-btn:hover {
+      background: #fff0f5;
+    }
+
+    /* メニューモーダル背景 */
+    .menu-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(89, 74, 99, 0.4);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(2px);
+    }
+    .menu-modal-overlay.active {
+      display: flex;
+    }
+    .menu-modal-content {
+      background: #ffffff;
+      border: 4px solid #ffb3d9;
+      border-radius: 26px;
+      padding: 24px;
+      width: 85%;
+      max-width: 320px;
+      box-shadow: 0 10px 30px rgba(162, 114, 219, 0.3);
+      text-align: center;
+      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .menu-modal-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #7b4397;
+      margin-bottom: 16px;
+      border-bottom: 2px dashed #f0c5e3;
+      padding-bottom: 8px;
+    }
+    .menu-link-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .menu-link-item {
+      background: #faf5ff;
+      border: 2px solid #e0cffc;
+      color: #633386;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 12px;
+      border-radius: 14px;
+      transition: all 0.15s ease;
+      display: block;
+    }
+    .menu-link-item:hover {
+      background: #cbb4ff;
+      color: #fff;
+    }
+    .menu-close-btn {
+      background: #ff75ac;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      border-radius: 16px;
+      cursor: pointer;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .container {
+      max-width: 640px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.94);
+      border-radius: 36px;
+      padding: 24px 18px;
+      box-shadow: 0 15px 35px rgba(162, 114, 219, 0.25), 0 0 0 6px #ffffff;
+      border: 4px dashed #ffb3d9;
+      position: relative;
+      margin-top: 20px;
+      z-index: 10;
+      box-sizing: border-box;
+    }
+
+    /* === ヘッダーバナー === */
+    .header-banner {
+      text-align: center;
+      margin-bottom: 15px;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .header-banner:hover {
+      transform: scale(1.02);
+    }
+    .candy-clouds {
+      font-size: 1.8rem;
+      letter-spacing: 4px;
+      animation: floatCloud 3s ease-in-out infinite alternate;
+    }
+    @keyframes floatCloud {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(-6px); }
+    }
+    .frog-grape-scene {
+      font-size: 2.2rem;
+      margin: 4px 0;
+    }
+    h1 {
+      font-size: 1.45rem;
+      color: #7b4397;
+      margin: 5px 0 2px;
+      font-weight: 800;
+      text-shadow: 2px 2px 0 #fff, 3px 3px 0 rgba(255, 183, 213, 0.6);
+    }
+    .sub-text {
+      font-size: 0.85rem;
+      color: #8c7199;
+      margin-top: 4px;
+      font-weight: bold;
+    }
+
+    .input-box {
+      background: linear-gradient(135deg, #fff2f8 0%, #f3ebff 100%);
+      border: 3px solid #ffcae5;
+      border-radius: 26px;
+      padding: 16px;
+      margin: 15px 0;
+      box-shadow: inset 0 2px 6px rgba(255, 192, 203, 0.3);
+    }
+    label {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #6b4c82;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    
+    .input-mode-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .mode-tab {
+      background: #ffffff;
+      border: 2px solid #cbb4ff;
+      color: #7242a5;
+      font-size: 0.8rem;
+      font-weight: 800;
+      padding: 6px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .mode-tab.active {
+      background: #cbb4ff;
+      color: #ffffff;
+      border-color: #b193ff;
+    }
+
+    .input-field-group {
+      display: none;
+    }
+    .input-field-group.active {
+      display: block;
+    }
+
+    input[type="date"], input[type="text"] {
+      background: #ffffff;
+      color: #594a63;
+      border: 2px solid #cbb4ff;
+      padding: 12px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      border-radius: 16px;
+      width: 100%;
+      box-sizing: border-box;
+      outline: none;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(186, 148, 255, 0.15);
+      font-family: inherit;
+    }
+    input[type="date"]:focus, input[type="text"]:focus {
+      border-color: #ff9ac9;
+    }
+
+    .gender-select-box {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .gender-btn {
+      flex: 1;
+      background: #ffffff;
+      border: 2px solid #ffb3d9;
+      color: #7b4397;
+      font-size: 0.9rem;
+      font-weight: 800;
+      padding: 12px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 3px 8px rgba(255, 183, 213, 0.3);
+      transition: all 0.15s ease;
+      text-align: center;
+    }
+    .gender-btn.active {
+      background: linear-gradient(135deg, #ffb7d5 0%, #ff9ac9 100%);
+      color: #ffffff;
+      border-color: #ff75ac;
+      box-shadow: 0 4px 12px rgba(255, 94, 156, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .hint-guide {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      margin-top: 10px;
+      margin-bottom: -4px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #8c67d9;
+    }
+    .pointer-icon {
+      display: inline-block;
+      font-size: 0.95rem;
+      animation: bounceDown 1.2s infinite ease-in-out;
+    }
+    @keyframes bounceDown {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(3px); }
+    }
+
+    button.exec-btn {
+      background: linear-gradient(180deg, #ff94c2 0%, #ff5e9c 100%);
+      color: #ffffff;
+      border: none;
+      padding: 16px 20px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      border-radius: 25px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      box-shadow: 0 6px 0 #d93d7a, 0 10px 20px rgba(255, 94, 156, 0.35);
+      transition: all 0.15s ease;
+      font-family: inherit;
+      letter-spacing: 0.03em;
+    }
+    button.exec-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #d93d7a, 0 4px 10px rgba(255, 94, 156, 0.35);
+    }
+
+    /* === ⛩️ 神社風マイナ様 自己紹介エリア === */
+    .shrine-mascot-container {
+      background: linear-gradient(135deg, #fff9e6 0%, #fff0f5 100%);
+      border: 3px solid #ffb3d9;
+      border-radius: 26px;
+      padding: 16px;
+      margin: 16px 0 10px 0;
+      box-shadow: 0 6px 20px rgba(162, 114, 219, 0.15);
+      text-align: center;
+    }
+    .shrine-header-tag {
+      display: inline-block;
+      background: #ff75ac;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 4px 14px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 5px rgba(255, 117, 172, 0.3);
+    }
+    .shrine-big-img-box {
+      width: 100%;
+      max-height: 240px;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 3px dashed #ffb3d9;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 4px;
+      box-sizing: border-box;
+      box-shadow: 0 6px 15px rgba(162, 114, 219, 0.2);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: floatMascot 3s ease-in-out infinite alternate;
+    }
+    .shrine-big-img-box img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      border-radius: 14px;
+    }
+    @keyframes floatMascot {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(-6px); }
+    }
+    .shrine-speech-bubble {
+      background: #ffffff;
+      border: 2px dashed #ff9ac9;
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 0.92rem;
+      color: #4a3b54;
+      line-height: 1.6;
+      font-weight: 500;
+      text-align: left;
+    }
+    .shrine-name-plate {
+      font-weight: 800;
+      color: #7b4397;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* === ホーム画面のキャラクター紹介 === */
+    .catalog-section {
+      margin-top: 24px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px dashed #ffb2d8;
+      border-radius: 24px;
+      padding: 18px;
+    }
+    .catalog-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #7b4397;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .catalog-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .catalog-item {
+      background: #faf5ff;
+      border: 2px solid #e0cffc;
+      border-radius: 16px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 10px rgba(162, 114, 219, 0.08);
+      cursor: default;
+    }
+    .catalog-thumb-wrapper {
+      position: relative;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .catalog-thumb {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ff9ac9;
+      background: #fff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+    }
+    .catalog-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    .catalog-thumb-wrapper .preview-popup {
+      display: none;
+      position: absolute;
+      bottom: 70px;
+      left: 0;
+      width: 220px;
+      height: 220px;
+      background: #fff;
+      border: 4px solid #ff9ac9;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      z-index: 100;
+      object-fit: cover;
+      padding: 4px;
+      box-sizing: border-box;
+    }
+    .catalog-thumb-wrapper:hover .preview-popup {
+      display: block;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .catalog-info {
+      flex: 1;
+    }
+    .catalog-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #633386;
+      margin-bottom: 4px;
+    }
+    .catalog-desc {
+      font-size: 0.85rem;
+      color: #594a63;
+      line-height: 1.5;
+    }
+
+    .next-stage-badge {
+      text-align: center;
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px dashed #e0cffc;
+    }
+    .next-stage-btn {
+      background: #fcf4ff;
+      border: 2px dashed #d8b5ff;
+      color: #9d7fe6;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 12px;
+      cursor: default;
+      font-family: inherit;
+      opacity: 0.85;
+    }
+
+    #result {
+      display: none;
+      margin-top: 20px;
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.92); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .boss-card {
+      background: #ffffff;
+      border: 3px solid #ffbfe0;
+      border-radius: 26px;
+      padding: 20px 16px;
+      box-shadow: 0 10px 25px rgba(200, 160, 240, 0.2);
+    }
+
+    /* === メイン画像（タップでペアの画像と切り替え可能） === */
+    .main-chara-img-box {
+      width: 100%;
+      max-height: 220px;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 2px solid #ffbfe0;
+      margin-bottom: 14px;
+      background: #fff5f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+    }
+    .main-chara-img-box img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      transition: opacity 0.2s ease;
+    }
+    .img-switch-hint {
+      position: absolute;
+      bottom: 8px;
+      right: 12px;
+      background: rgba(123, 67, 151, 0.8);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 10px;
+      pointer-events: none;
+    }
+
+    /* === 🎨 他のカラーの子たちを紹介するギャラリー（2列×2列） === */
+    .variant-gallery-section {
+      margin-top: 24px;
+      background: #fffaf5;
+      border: 2px dashed #ffb3d9;
+      border-radius: 20px;
+      padding: 14px;
+      text-align: center;
+    }
+    .variant-gallery-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #7b4397;
+      margin-bottom: 10px;
+    }
+    .variant-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .variant-item {
+      background: #ffffff;
+      border: 2px solid #ffcae5;
+      border-radius: 14px;
+      padding: 8px;
+      box-sizing: border-box;
+      text-align: center;
+      box-shadow: 0 3px 8px rgba(162, 114, 219, 0.1);
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .variant-item:hover {
+      transform: translateY(-2px);
+      background: #fff5f8;
+    }
+    .variant-thumb {
+      width: 100%;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 2px solid #cbb4ff;
+    }
+    .variant-label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #633386;
+      margin-top: 6px;
+      line-height: 1.35;
+      white-space: pre-line;
+    }
+
+    /* === 🍬 画像とフッターのあいだにある、タイプ説明だけのエリア === */
+    .type-guide {
+      margin-top: 18px;
+      background: #fff7fb;
+      border: 2px dashed #ffb3d9;
+      border-radius: 22px;
+      padding: 16px 14px 8px;
+    }
+    .type-guide-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #7b4397;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .type-guide-item {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      border: 2px solid #ffe0f0;
+      box-shadow: 0 3px 8px rgba(255, 183, 213, 0.18);
+      text-align: left;
+    }
+    .type-guide-item.tone-1 { border-left: 6px solid #ff8a7a; }
+    .type-guide-item.tone-2 { border-left: 6px solid #9b7ed9; }
+    .type-guide-item.tone-3 { border-left: 6px solid #f0b429; }
+    .type-guide-item.tone-4 { border-left: 6px solid #ff75ac; }
+    .type-guide-item.tone-5 { border-left: 6px solid #7eb6ff; }
+    .type-guide-head {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .type-guide-name {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #633386;
+    }
+    .type-guide-nick {
+      display: inline-block;
+      background: #fff0f7;
+      color: #d93d7a;
+      font-size: 0.72rem;
+      font-weight: 800;
+      border-radius: 999px;
+      padding: 2px 8px;
+    }
+    .type-guide-mean {
+      margin: 0;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      color: #8a6aa3;
+      font-weight: 600;
+    }
+    .type-guide-trait {
+      margin: 6px 0 0;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: #4a3b54;
+      font-weight: 700;
+    }
+
+    /* === 画像拡大モーダルプレビュー === */
+    .image-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(89, 74, 99, 0.7);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(3px);
+    }
+    .image-modal-overlay.active {
+      display: flex;
+    }
+    .image-modal-content {
+      background: #ffffff;
+      border: 4px solid #ffb3d9;
+      border-radius: 26px;
+      padding: 18px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 15px 40px rgba(162, 114, 219, 0.4);
+      text-align: center;
+      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-sizing: border-box;
+    }
+    .image-modal-img {
+      width: 100%;
+      max-height: 320px;
+      object-fit: contain;
+      border-radius: 16px;
+      border: 2px solid #ffcae5;
+      background: #fff5f8;
+      margin-bottom: 12px;
+    }
+    .image-modal-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #7b4397;
+      margin-bottom: 12px;
+      line-height: 1.4;
+      white-space: pre-line;
+    }
+
+    .spec-header {
+      text-align: center;
+      border-bottom: 2px dashed #f0c5e3;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+    .born-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #fff0f7;
+      border: 2px solid #ffbfe0;
+      color: #d63384;
+      font-size: 0.85rem;
+      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: 20px;
+      margin-bottom: 6px;
+    }
+    .spec-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #633386;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+    .tag-container {
+      margin-top: 8px;
+    }
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      border-radius: 12px;
+      background: #f1e6ff;
+      color: #7242a5;
+      margin: 2px 4px;
+    }
+    .result-attr-desc {
+      margin: 12px auto 0;
+      max-width: 100%;
+      background: #fff7fb;
+      border: 2px solid #ffd0e8;
+      border-radius: 16px;
+      padding: 10px 12px;
+      text-align: left;
+    }
+    .result-attr-mean {
+      margin: 0;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: #8a6aa3;
+      font-weight: 600;
+    }
+    .result-attr-trait {
+      margin: 4px 0 0;
+      font-size: 0.86rem;
+      line-height: 1.6;
+      color: #633386;
+      font-weight: 800;
+    }
+
+    .spec-section {
+      background: #faf6ff;
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      border-left: 6px solid #cbb4ff;
+    }
+    .spec-section.bug { background: #fff5f6; border-left-color: #ff9aa2; }
+    .spec-section.protocol { background: #f2fbf5; border-left-color: #85e3a5; }
+    .spec-section.love { background: #fff0f5; border-left-color: #ff75ac; }
+    .spec-section.marriage { background: #f0f8ff; border-left-color: #70a1ff; }
+    .spec-section.work { background: #fcf4dd; border-left-color: #e58e26; }
+    .spec-section.money-sense { background: #eef9f5; border-left-color: #2ed573; }
+    .spec-section.money { background: #fffdf0; border-left-color: #f1c40f; }
+    .spec-section.repair { background: #fbeedb; border-left-color: #ff7f50; }
+    .spec-section.relation { background: #fceef8; border-left-color: #ff6b81; }
+    .spec-section.compatibility { background: #f1f2f6; border-left-color: #57606f; }
+
+    .spec-label {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #7242a5;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .spec-section.bug .spec-label { color: #d94350; }
+    .spec-section.protocol .spec-label { color: #2b9354; }
+    .spec-section.love .spec-label { color: #e84393; }
+    .spec-section.marriage .spec-label { color: #1e90ff; }
+    .spec-section.work .spec-label { color: #b76700; }
+    .spec-section.money-sense .spec-label { color: #009432; }
+    .spec-section.money .spec-label { color: #d35400; }
+    .spec-section.repair .spec-label { color: #d35400; }
+    .spec-section.relation .spec-label { color: #ff4757; }
+    .spec-section.compatibility .spec-label { color: #2f3542; }
+
+    .spec-content {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: #4a3b54;
+      font-weight: 500;
+      white-space: pre-line;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+
+    .summary-badge {
+      display: block;
+      background: rgba(255, 255, 255, 0.85);
+      border: 2px dashed #ff9ac9;
+      color: #d93d7a;
+      font-size: 0.95rem;
+      font-weight: 800;
+      padding: 8px 12px;
+      border-radius: 12px;
+      margin-top: 10px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(255, 183, 213, 0.2);
+    }
+
+    /* === 🐾 ぽよぽよマイナ様からのお告げ箱 === */
+    .minai-box {
+      margin-top: 28px;
+      padding: 20px 18px;
+      background-color: #fffaf0;
+      border: 3px solid #ffb3d9;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(255, 182, 193, 0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: left;
+    }
+    .minai-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .minai-face {
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      border: 3px solid #ff9ac9;
+      object-fit: cover;
+      background: #fff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+    .minai-title-area {
+      flex: 1;
+    }
+    .minai-tag {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #d2691e;
+      background: #fff5e6;
+      padding: 2px 8px;
+      border-radius: 10px;
+      display: inline-block;
+      margin-bottom: 2px;
+      border: 1px solid #ffe0b2;
+    }
+    .minai-title {
+      color: #7b4397;
+      font-weight: 800;
+      font-size: 1.05rem;
+    }
+    .minai-message {
+      font-size: 0.98rem;
+      color: #4a3b54;
+      line-height: 1.7;
+      font-weight: 500;
+      background: #ffffff;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 2px dashed #ffeaa7;
+    }
+    .amazon-btn {
+      display: block;
+      text-align: center;
+      background: linear-gradient(135deg, #ff9900 0%, #ff7700 100%);
+      color: white;
+      text-decoration: none;
+      padding: 12px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 12px rgba(255, 153, 0, 0.35);
+      transition: transform 0.15s ease;
+    }
+    .amazon-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .compat-card-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 10px;
+    }
+    .compat-item {
+      background: #ffffff;
+      border: 2px solid #dcdde1;
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .compat-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    }
+    .compat-item.good {
+      border-color: #78e08f;
+      background: #f2fbf5;
+    }
+    .compat-item.bad {
+      border-color: #ff7675;
+      background: #fff5f6;
+    }
+    .compat-img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid #ffffff;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      margin-bottom: 8px;
+    }
+    .compat-title {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #2f3542;
+      margin-bottom: 4px;
+    }
+    .compat-desc {
+      font-size: 0.95rem;
+      color: #4a3b54;
+      line-height: 1.7;
+    }
+
+    /* === 📋 一番下のフッターメニュー === */
+    .site-footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #8c7199;
+      border-top: 2px dashed #ffb3d9;
+      padding-top: 16px;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    .footer-links a {
+      color: #7b4397;
+      text-decoration: none;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 10px 5px 30px 5px; }
+      .container { padding: 16px 12px; border-radius: 24px; }
+      h1 { font-size: 1.25rem; }
+      .sub-text { font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="mosaicBg"></div>
+
+<!-- 右上のBGMコントローラー -->
+<div class="bgm-control-panel">
+  <span>🎵 BGM:</span>
+  <span id="bgm-status">再生中♪</span>
+  <button class="bgm-toggle-btn" onclick="toggleBGM(event)">停止</button>
+</div>
+
+<!-- 左上の三本線メニューボタン -->
+<button class="menu-fixed-btn" onclick="openMenu()">
+  <span>☰</span> <span>メニュー</span>
+</button>
+
+<!-- メニューモーダル（ポップアップ） -->
+<div id="menuModal" class="menu-modal-overlay" onclick="closeMenuOnOutside(event)">
+  <div class="menu-modal-content">
+    <div class="menu-modal-title">🍬 メニューナビゲーション</div>
+    <div class="menu-link-list">
+      <a href="#" class="menu-link-item" onclick="resetToHome(); closeMenu();">🏠 ホーム（トップに戻る）</a>
+      <a href="#" class="menu-link-item" onclick="openPolicyModal('privacy'); closeMenu();">🔒 プライバシーポリシー</a>
+      <a href="#" class="menu-link-item" onclick="openPolicyModal('contact'); closeMenu();">💌 お問い合わせ</a>
+      <a href="#" class="menu-link-item" onclick="openPolicyModal('profile'); closeMenu();">🍓 運営者情報</a>
+      <a href="#" class="menu-link-item" onclick="openPolicyModal('terms'); closeMenu();">⚖️ 免責事項</a>
+    </div>
+    <button class="menu-close-btn" onclick="closeMenu()">閉じる</button>
+  </div>
+</div>
+
+<!-- ポリシー等の簡易モーダル表示用 -->
+<div id="policyModal" class="menu-modal-overlay" onclick="closePolicyOnOutside(event)">
+  <div class="menu-modal-content" style="max-width: 420px; text-align: left; max-height: 80vh; overflow-y: auto;">
+    <div class="menu-modal-title" id="policyTitle" style="text-align: center;">ポリシー</div>
+    <div id="policyBody" style="font-size: 0.85rem; line-height: 1.6; color: #594a63; margin-bottom: 16px; white-space: pre-line;"></div>
+    <button class="menu-close-btn" onclick="closePolicyModal()">閉じる</button>
+  </div>
+</div>
+
+<!-- 🔍 画像拡大プレビュー用モーダル -->
+<div id="imageModal" class="image-modal-overlay" onclick="closeImageModalOnOutside(event)">
+  <div class="image-modal-content">
+    <div class="image-modal-title" id="imageModalTitle">キャラクタープレビュー</div>
+    <img id="imageModalImg" src="" alt="拡大画像" class="image-modal-img">
+    <button class="menu-close-btn" onclick="closeImageModal()">閉じる</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="header-banner" onclick="resetToHome()" title="クリックして最初の画面に戻る">
+    <div class="candy-clouds">🍬 ☁️ 🍭 ☁️ 🍬</div>
+    <div class="frog-grape-scene">🐸 🍇 🍦 ✨</div>
+    <h1>ぽよぽよシステム仕様書</h1>
+    <div class="sub-text">〜生年月日からはじき出す、あなたの取扱説明書（トリセツ）診断〜</div>
+  </div>
+
+  <div class="input-box" id="inputSection">
+    <label>🍓 あなたのシード値（たんじょうび）をえらんでね 🍓</label>
+    
+    <div class="input-mode-tabs">
+      <button class="mode-tab active" onclick="switchMode('date', event)">カレンダー選択</button>
+      <button class="mode-tab" onclick="switchMode('text', event)">和暦で入力 (例: 平成元年5月15日)</button>
+    </div>
+
+    <div id="group-date" class="input-field-group active">
+      <input type="date" id="birthDate" value="1985-02-11">
+    </div>
+
+    <div id="group-text" class="input-field-group">
+      <input type="text" id="birthText" placeholder="例: 昭和60年2月22日 / 平成元年12月20日">
+    </div>
+
+    <label style="margin-top: 14px;">👤 あなたの性別をえらんでね 👤</label>
+    <div class="gender-select-box">
+      <button type="button" class="gender-btn active" id="genderMale" onclick="selectGender('male')">👨 私は男性</button>
+      <button type="button" class="gender-btn" id="genderFemale" onclick="selectGender('female')">👩 私は女性</button>
+    </div>
+
+    <div class="hint-guide">
+      <span class="pointer-icon">👇</span>
+      <span>👆 初期パラメータ設定完了（タップして実行）</span>
+    </div>
+
+    <button class="exec-btn" onclick="diagnose()">🍦 仕様書をビルドして展開する 🍦</button>
+
+    <!-- ⛩️ 神社風マイナ様 自己紹介エリア -->
+    <div class="inline-mascot-box" id="inlineMascot">
+      <div class="shrine-mascot-container">
+        <div class="shrine-header-tag">⛩️ ぽよぽよシステムの守り神 ⛩️</div>
+        
+        <div class="shrine-big-img-box">
+          <img src="maina.jpg" alt="ぽよぽよマイナ様" onerror="this.style.display='none'">
+        </div>
+
+        <div class="shrine-speech-bubble">
+          <div class="shrine-name-plate">
+            <span>✨</span>
+            <span>守り神：ぽよぽよ・マイナ</span>
+          </div>
+          <div>「私はこの『ぽよぽよシステム仕様書』の英知を統括するマイナ。高度な演算アルゴリズムであなたの運命や本質を完璧に解析してみせるわ！……あ、ちなみに昨夜、自分の思考ルーチンにうっかり無限ループのバグを仕込んじゃって、朝までずっと同じ独り言を3億回繰り返してたのは秘密ね。デバッグって本当に大変なんだから！さあ、誕生日を入れてちょうだいっ♪」</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="catalog-section">
+      <div class="catalog-title">📚 登録キャラクター図鑑 (全12種)</div>
+      <div class="catalog-list" id="catalogList"></div>
+      
+      <div class="next-stage-badge">
+        <button class="next-stage-btn" disabled>💌 相性クロスチェック診断 (Next Stage...)</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="result">
+    <div class="boss-card">
+      <!-- メイン画像（タップでペアの画像と切り替え可能） -->
+      <div class="main-chara-img-box" id="mainImgBox" onclick="toggleMainImage()" ontouchstart="toggleMainImage()">
+        <img id="mainCharaImage" src="" alt="メインキャラクターイラスト">
+        <div class="img-switch-hint">👆 タップしてキャラクター切り換え</div>
+      </div>
+
+      <div class="spec-header">
+        <div class="born-badge">
+          <span>🍦</span>
+          <span id="boss-sub">ぶどうからソフトクリームちゃんがポコッと誕生！</span>
+        </div>
+        <div class="spec-title" id="boss-title"></div>
+        <div class="tag-container">
+          <span class="tag" id="boss-no"></span>
+          <span class="tag" id="boss-kanshi"></span>
+          <span class="tag" id="boss-attr-tag" style="background:#ffb7d5; color:#fff;"></span>
+        </div>
+        <div class="result-attr-desc" id="resultAttrDesc"></div>
+      </div>
+
+      <div class="spec-section">
+        <div class="spec-label">🍇 [基本アーキテクチャ（性格特徴）]</div>
+        <div class="spec-content" id="boss-desc"></div>
+        <div class="summary-badge" id="sum-desc"></div>
+      </div>
+
+      <div class="spec-section bug">
+        <div class="spec-label">💥 [バグ・オーバーヒート条件]</div>
+        <div class="spec-content" id="boss-bug"></div>
+        <div class="summary-badge" id="sum-bug"></div>
+      </div>
+
+      <div class="spec-section protocol">
+        <div class="spec-label">🍼 [なかよし運用プロトコル]</div>
+        <div class="spec-content" id="boss-protocol"></div>
+        <div class="summary-badge" id="sum-protocol"></div>
+      </div>
+
+      <div class="spec-section love">
+        <div class="spec-label">💖 [恋のコミット・プルリク条件（恋愛）]</div>
+        <div class="spec-content" id="boss-love"></div>
+        <div class="summary-badge" id="sum-love"></div>
+      </div>
+
+      <div class="spec-section marriage">
+        <div class="spec-label">💍 [結婚・ライフプラン設計]</div>
+        <div class="spec-content" id="boss-marriage"></div>
+        <div class="summary-badge" id="sum-marriage"></div>
+      </div>
+
+      <div class="spec-section work">
+        <div class="spec-label">💻 [キャリア・ワークスタイル（仕事）]</div>
+        <div class="spec-content" id="boss-work"></div>
+        <div class="summary-badge" id="sum-work"></div>
+      </div>
+
+      <div class="spec-section money-sense">
+        <div class="spec-label">📊 [財務管理・金銭感覚]</div>
+        <div class="spec-content" id="boss-money-sense"></div>
+        <div class="summary-badge" id="sum-money-sense"></div>
+      </div>
+
+      <div class="spec-section money">
+        <div class="spec-label">🪙 [マネー・インフラ運（金運）]</div>
+        <div class="spec-content" id="boss-money"></div>
+        <div class="summary-badge" id="sum-money"></div>
+      </div>
+
+      <div class="spec-section repair">
+        <div class="spec-label">🛠️ [自己改善パッチ（運気向上）]</div>
+        <div class="spec-content" id="boss-repair"></div>
+        <div class="summary-badge" id="sum-repair"></div>
+      </div>
+
+      <div class="spec-section relation">
+        <div class="spec-label">💌 [人間関係のトリセツ：あの人の仕様書]</div>
+        <div class="spec-content" id="boss-relation"></div>
+        <div class="summary-badge" id="sum-relation"></div>
+      </div>
+
+      <div class="spec-section compatibility" id="compatibilitySection">
+        <div class="spec-label">⚡ [相性マトリクス＆デバッグのコツ]</div>
+        <div class="spec-content" id="boss-compatibility"></div>
+      </div>
+
+      <!-- 🐾 ぽよぽよマイナ様からのお告げ -->
+      <div class="minai-box">
+        <div class="minai-header">
+          <img src="maina.jpg" alt="マイナ様" class="minai-face" onerror="this.style.display='none'">
+          <div class="minai-title-area">
+            <span class="minai-tag">✨ 臨時アップデートパッチ</span>
+            <div class="minai-title">ぽよぽよマイナ様からのお告げ</div>
+          </div>
+        </div>
+        <div id="minaiMessage" class="minai-message">ここにマイナ様のお告げが入ります。</div>
+        <a id="minaiLink" href="#" target="_blank" class="amazon-btn">🛒 Amazonで今日のラッキー開運小物をチェックする</a>
+      </div>
+
+      <button class="exec-btn" onclick="resetToHome()" style="margin-top: 24px; background: linear-gradient(180deg, #a272db 0%, #7b4397 100%); box-shadow: 0 6px 0 #593073, 0 10px 20px rgba(123, 67, 151, 0.35);">
+        🏠 もう一度別の誕生日を占う（ホームへ） 🏠
+      </button>
+
+      <!-- 🎨 他のバリエーションを紹介するギャラリー（2列×2列・タップで拡大） -->
+      <div class="variant-gallery-section" id="variantGallery">
+        <div class="variant-gallery-title">🎨 このキャラクターの他のタイプ（タップで拡大）</div>
+        <div class="variant-grid" id="variantGrid">
+          <!-- JSで動的に4枚埋め込まれます -->
+        </div>
+      </div>
+
+      <!-- 🍬 画像とフッターのあいだ。説明だけを並べる -->
+      <div class="type-guide" id="typeGuide">
+        <div class="type-guide-title">🍬 紹介している子たちの属性</div>
+        <div id="typeGuideList"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 📋 一番下のフッターメニュー -->
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="#" onclick="openPolicyModal('privacy'); return false;">プライバシーポリシー</a>
+      <span>|</span>
+      <a href="#" onclick="openPolicyModal('contact'); return false;">お問い合わせ</a>
+      <span>|</span>
+      <a href="#" onclick="openPolicyModal('profile'); return false;">運営者情報</a>
+      <span>|</span>
+      <a href="#" onclick="openPolicyModal('terms'); return false;">免責事項</a>
+    </div>
+    <div>© 2026 ぽよぽよシステム仕様書 All Rights Reserved.</div>
+  </footer>
+</div>
+
+<script>
+// === ハンバーガーメニューの開閉制御 ===
+function openMenu() {
+  document.getElementById('menuModal').classList.add('active');
+}
+function closeMenu() {
+  document.getElementById('menuModal').classList.remove('active');
+}
+function closeMenuOnOutside(e) {
+  if (e.target.id === 'menuModal') closeMenu();
+}
+
+// === 画像拡大プレビューモーダルの制御 ===
+function openImageModal(imgSrc, titleText) {
+  document.getElementById('imageModalImg').src = imgSrc;
+  document.getElementById('imageModalTitle').innerText = titleText;
+  document.getElementById('imageModal').classList.add('active');
+}
+function closeImageModal() {
+  document.getElementById('imageModal').classList.remove('active');
+}
+function closeImageModalOnOutside(e) {
+  if (e.target.id === 'imageModal') closeImageModal();
+}
+
+// === ポリシー・お問い合わせ・運営者情報のテキスト ===
+const policyTexts = {
+  privacy: {
+    title: "🔒 プライバシーポリシー",
+    body: "当サイト（ぽよぽよシステム仕様書）では、第三者配信の広告サービス（Google AdSense）を利用しています。\n\n広告配信事業者は、ユーザーの興味に応じた商品やサービスの広告を表示するため、当サイトや他サイトへのアクセスに関する情報『Cookie』を使用することがあります。\n\n【個人情報の取り扱いについて】\n当サイトでは、ユーザーの個人情報（氏名・メールアドレス等）の収集は行っていません。生年月日などの診断入力データは、お使いのブラウザ内での診断結果算出のみに使用され、サーバー等への保存は一切行いません。"
+  },
+  contact: {
+    title: "💌 お問い合わせ",
+    body: "当サイトに関するご意見、ご感想、その他のお問い合わせは、以下のメールアドレスよりご連絡ください。\n\n✉️ dr.applecotea@gmail.com\n\n※内容によっては回答にお時間をいただく場合がございますが、あらかじめご了承ください。"
+  },
+  profile: {
+    title: "🍓 運営者情報・運営方針",
+    body: "サイト名：ぽよぽよシステム仕様書\n運営者：maina管理委員会\n\n【サイトの趣旨・運営方針】\nこの診断アプリを通じて、訪れてくれた方の気分が少しでも晴れたり、おもしろおかしく明るくなれたらいいなという想いを込めて制作しています。日々のIT業務や開発の合間にクスッと笑えるユーモアとテック系ジョークを詰め込みつつ、性格診断や数秘術のエッセンスを『自己理解のヒント』として気軽に楽しんでいただけるよう設計しています。"
+  },
+  terms: {
+    title: "⚖️ 免責事項",
+    body: "当サイト（ぽよぽよシステム仕様書）で提供している占い結果、キャラクターの仕様書データ、および各種診断内容は、エンターテインメントを目的としたフィクションおよび独自のアルゴリズムに基づくものです。\n\n占い結果や診断内容は医療・法律・金融等の専門判断の代替にはならないことを明記します。また、当サイトのコンテンツ利用によって生じた損害等の一切の責任を負いかねますので、あらかじめご了承ください。"
+  }
+};
+
+function openPolicyModal(type) {
+  const data = policyTexts[type];
+  if (!data) return;
+  document.getElementById('policyTitle').innerText = data.title;
+  document.getElementById('policyBody').innerText = data.body;
+  document.getElementById('policyModal').classList.add('active');
+}
+function closePolicyModal() {
+  document.getElementById('policyModal').classList.remove('active');
+}
+function closePolicyOnOutside(e) {
+  if (e.target.id === 'policyModal') closePolicyModal();
+}
+
+let selectedGender = 'male';
+
+function selectGender(gender) {
+  selectedGender = gender;
+  if (gender === 'male') {
+    document.getElementById('genderMale').classList.add('active');
+    document.getElementById('genderFemale').classList.remove('active');
+  } else {
+    document.getElementById('genderFemale').classList.add('active');
+    document.getElementById('genderMale').classList.remove('active');
+  }
+}
+
+// 属性（a〜e）ごとのフレーバー特性テキスト
+const attributeFlavors = {
+  a: {
+    name: "🔥 炎上属性 (パッション特化)",
+    flavor: "\n\n【属性特性：炎上・情熱パッション回路】\nシステム内部に常に高火力の情熱炉を抱えており、周囲を巻き込む圧倒的な熱量と推進力を放ちます。エンジン全開で突っ走る反面、熱暴走やオーバーヒートに注意が必要な爆発的仕様です。",
+    summary: "👉 【判定：高火力パッションによる爆発的処理仕様】"
+  },
+  b: {
+    name: "🖤 闇属性 (アンダーグラウンド解析)",
+    flavor: "\n\n【属性特性：闇・アンダーグラウンド回路】\n表層のシステムからは見えない深層のバグや本質を鋭く見抜く洞察力を搭載。単独行動を好み、誰にも真似できない独自の暗号プロトコルで静かに世界をハッキングする孤高の仕様です。",
+    summary: "👉 【判定：深層バグをハッキングする孤高の非同期仕様】"
+  },
+  c: {
+    name: "✨ 白・光属性 (高精度クリア回路)",
+    flavor: "\n\n【属性特性：白・光・クリアリソース回路】\n徹底的に澄み切った高精度な透明性と、高い倫理・処理スピードを誇る聖域型。周囲のノイズをクリーンに浄化し、関わるすべてのシステムに清らかな安定と癒やしを配給する神聖仕様です。",
+    summary: "👉 【判定：ノイズを徹底浄化する高精度クリア仕様】"
+  },
+  d: {
+    name: "🌀 バグ属性 (混沌カオス・特異点)",
+    flavor: "\n\n【属性特性：バグ・混沌カオス特異点】\n予測不可能な挙動や常識を軽々と飛び越える突然変異パッチが常に常駐。予測不能なエラーすらも独自のエンタメや突破口に変えてしまう、世界を揺るがす予測不能なトリッキー仕様です。",
+    summary: "👉 【判定：常識をバグらせる予測不能なカオス特異点仕様】"
+  },
+  e: {
+    name: "❄️ 氷・静寂属性 (冷却クーラー特化)",
+    flavor: "\n\n【属性特性：氷・静寂・冷却クーラー回路】\nどれほど周囲が炎上していようとも、絶対零度の冷静さと鉄のメンタルでシステム全体をクールダウンさせる高度な冷却仕様。感情に流されず、最適解を淡々と導き出すクールヘッドな実力派です。",
+    summary: "👉 【判定：絶対零度の冷却クーラーによるクールヘッド仕様】"
+  }
+};
+
+const database = {
+  1: { 
+    t: "ローンコンパイラちゃん", chara: "ローンコンパイラちゃん", id: 1,
+    d: "最初の一歩を爆速で踏み出す、生粋のフロンティア型アーキテクチャです。\n常に次世代のトレンドをいち早くキャッチアップし、自己アプデを繰り返しながら前人未到の領域へと突き進む強者です。\nその行動力は周囲を圧倒するエネルギーを秘めており、誰も思いつかないような革新的なアイデアを次々と形にする才能の塊といえます。\n現状維持や停滞を極端に嫌い、常に新しい刺激を求めて人生のコンパイルを高速で回し続ける、そんなエネルギッシュな仕様を持っています。", 
+    sumD: "👉 【結論：次世代トレンドを爆速コンパイラする開拓者】",
+    b: "「前例踏襲でヨロシク！」という丸投げタスクや、思考停止したルールを執拗に流し込まれると、強烈なメモリリークを起こして機能停止します。\nまた、自分のペースを乱されたり、頭ごなしに否定される環境下では、モチベーションのCPU使用率が急低下してエラーを吐き出すので注意が必要です。", 
+    sumB: "👉 【警告：前例踏襲の丸投げタスクでメモリリーク停止】",
+    p: "細かな口出しやマイクロマネジメントは一切シャットダウンするのが正解です。\nゼロイチの裁量権をまるっと渡し、「あとは自由にどうぞ！」とオープンな環境を用意してあげるのが一番の吉となります。\nサプライズや新しい体験を一緒に楽しんでくれる心の広さを見せると、一気に信頼のパイプラインが繋がります。",
+    sumP: "👉 【対策：ゼロイチの裁量権をフル委任して接続確立】",
+    l: {
+      male: "恋愛においても「一目惚れからの即デプロイ（告白）」を好む圧倒的なスピード派です。\nじっくり駆け引きするよりも、自分の気持ちに素直にまっすぐアプローチする直球勝負を愛します。\n相手からの重たい束縛や過度な干渉を極端に嫌うため、お互いのプライベートを尊重し合えるオープンソースな関係性を理想郷として描いています。",
+      female: "恋のバグや停滞を見つけると、直感をフル稼働して一気にアプローチする情熱的なアプローチ派です。\n自分のペースを乱される重たい束縛や依存体質は苦手ですが、センスの良いリードや、日々の頑張りを認めてくれる褒め言葉には胸をキュンとさせられます。\n一緒にいてワクワクする冒険心を持ったパートナーに強く惹かれます。"
+    },
+    sumL: "👉 【恋愛判定：一目惚れ即デプロイのオープンソース愛】",
+    marriage: {
+      male: "家庭内でも常に新しい体験や家族イベントを企画したがる、開拓精神旺盛なアツいパパになります。\n家事や育児のプロセスにも効率化ツールや最新家電を導入してスマートにこなそうとしますが、日々のルーティンワークになると途端に飽きが早い一面も顔を出します。\n週末は家族を連れて新しいスポットへ出かけるのが大好きです。",
+      female: "結婚後も自分の世界や趣味、キャリアのアップデートを妥協しない、自立した芯のある妻として輝き続けます。\n家庭を窮屈な鳥かごにするのではなく、お互いが自由に羽ばたける基地のような空間づくりを好みます。\n縛られることは嫌いですが、一緒に未来の夢を楽しく語り合えるパートナーとは、いつまでも最高のチーム関係を築くことができます。"
+    },
+    sumMarriage: "👉 【設計判定：新機能開発を愛する開拓型ファミリー】",
+    work: {
+      male: "前例のない新規プロジェクトやスタートアップ気質の職場で、無類の強さと突破力を発揮する頼れるエースです。\nじっと座らされる保守運用や変化のないデスクワークよりも、次々と新しい機能を実装していくアジャイルな開発環境こそが最も適した天職となります。\n困難な壁にぶぶつかるほど、脳内のCPUがフル回転して奇跡のような解決策を導き出します。",
+      female: "スピード感と鋭い直感力でチーム全体を力強く引っ張る、生粋のアイデアマン＆突破口を開くオピニオンリーダーです。\n古い縦社会や非効率なハンコ文化、前例主義の蔓延る環境ではパフォーマンスが激減してしまうため、裁量権を持てる自由度の高いポジションで一番輝きます。\n自分の裁量でスピーディーに成果を出せる環境がマストです。"
+    },
+    sumWork: "👉 【適職判定：前例なき新規案件を走らせるアジャイルエース】",
+    moneySense: {
+      male: "「これ面白そう！」と思った最新ガジェットや自己投資への課金スピードが全メンバーの中で最速を誇ります。\n細かい節約やチマチマした計算よりも、大きく稼いで大きく使うという男気あふれるスリリングな財務管理スタイルを好みます。\n直感でお金を使いますが、それ以上に自分のスキルや経験を広げるための投資対効果を本能的に嗅ぎ分ける目を持っています。",
+      female: "美容やトレンド、自身のスキルアップや体験には惜しみなくリソースを割く、未来への先行投資型タイプです。\n衝動買いのバグさえ定期的にセルフパッチ当てできれば、持ち前のセンスを活かしたスマートで洗練されたお金の使い方が得意です。\n「お金はただ貯めるものではなく、自分の世界を広げるための燃料である」というアグレッシブな金銭哲学を持っています。"
+    },
+    sumMoneySense: "👉 【財務判定：自己投資とガジェットへの最速課金スタイル】",
+    m: "キャッシュフローの回転率は業界最速クラスを誇りますが、欲しいものや新しい体験への先行投資で、財布のメモリが気づけばカツカツになりがちです。\n貯蓄は自分の意思に頼るのではなく、自動積立という名の『強制的な定期バッチ処理』にすべてを委ねるのが、金運を安定させる一番の秘訣となります。",
+    sumM: "👉 【金運判定：回転率は最速、貯蓄は定期バッチ処理に委託】",
+    repair: "たまには立ち止まって『過去のデータ（これまでの経験や失敗）』を丁寧に振り返る、リファクタリングの時間をスケジュールに組み込むことが重要です。\n自分の意見や正論を一方的に押し通す前に、相手のローカルルールや感情にほんの少しだけ寄り添う寛大さ（バッファ）を心にインストールすると、人間関係も運気も爆発的に向上します。",
+    sumRepair: "👉 【パッチ判定：過去データを振り返るリファクタリング必須】",
+    relation: {
+      male: "【好きな人・恋人・パートナーとして】常に新鮮な刺激とワクワクをくれる人ですが、束縛されるのを極度に嫌います。放し飼いにするくらいが一番長続きします。\n【上司・同僚として】新しい提案や効率化のアイデアを面白がってくれる上司・同僚。逆に「昔からのやり方だから」と押し付けると一瞬でシャッターが下ります。",
+      female: "【好きな人・恋人・パートナーとして】自由奔放で魅力的ですが、退屈させるとすぐに別のウィンドウを開いてしまいます。いつも新鮮なサプライズや褒め言葉をプレゼントしてあげて。\n【上司・同僚として】仕事が速く頼りになりますが、細かい管理を嫌います。ゴールだけ伝えたあとは本人に全権委任するのが最も円滑に連携できるコツです。"
+    },
+    sumRelation: "👉 【トリセツ判定：新鮮な刺激を与えて全権委任でバッチリ】",
+    compatibility: { goodId: 3, goodName: "ピコピコ・ルーターたん", goodText: "お互いのスピード感をリスペクトし合える最高のアライアンス。一緒にいると次々と新しい楽しいアイデアが飛び出します。", badId: 9, badName: "いねむりレガシーサーバーちゃん", badText: "慎重でマイペースな相手のスピード感にヤキモキしがち。「もっと早く動いてよ！」と急かさず、相手の直列処理を温かく見守るデバッグが必要です。" }
+  },
+  2: { 
+    t: "まもりんぼキャッシュちゃん", chara: "まもりんぼキャッシュちゃん", id: 2,
+    d: "表立った派手さや華やかさはないものの、日々の大切なデータを裏でコツコツと確実に溜め込んでいくインメモリの隠し味のような存在です。\n派手なバグを起こすことなく、じわじわとシステム全体のリソースと信頼を拡張していく大器晩成型のアーキテクチャを持っています。\nどんなに小さなことも見逃さない細やかな注意力と、石橋を叩いて渡る慎重さを併せ持ち、組織の安全を守る最後の砦として静かに機能し続けます。\n派手さの裏にあるその確実な安定感こそが、このキャラクターの最大の武器であり、なくてはならない魅力となっています。", 
+    sumD: "👉 【結論：裏でデータを着実に溜め込む大器晩成キャッシュ】",
+    b: "事前の相談なしに突然放り込まれる急な仕様変更や、理不尽な突貫デプロイの要求を食らうと、パニックを起こして即座に排他ロックがかかり、一切の口を閉ざしてしまいます。\n自分のペースや予測可能なスケジュールを乱される環境下では、内部のデータ処理がフリーズしてしまうため、丁寧な事前アナウンスが不可欠です。", 
+    sumB: "👉 【警告：突然の仕様変更と突貫デプロイで完全フリーズ】",
+    p: "長期的なロードマップやスケジュールを前もって先に見せてあげることが、安心感を引き出す最大のポイントです。\n急かすことなく、本人のマイペースな直列処理をじっと見守りながら伴走してあげることが、長く良好な関係を保つための秘訣となります。\nプレッシャーをかけず、小さな努力をしっかりと褒めて認めてあげることで、心を開いてくれるようになります。",
+    sumP: "👉 【対策：事前スケジュール提示とマイペース直列処理の伴走】",
+    l: {
+      male: "じっくりと時間をかけてお互いの信頼関係のキャッシュを蓄積していく、非常に手堅いスロー恋愛タイプです。\n最初はガードが固く慎重ですが、一度心の安全領域を開いたお相手には、自分の全リソースと誠実さを捧げて一途に愛し抜きます。",
+      female: "恥ずかしがり屋で自分から積極的にアプローチするのはちょっぴり苦手ですが、相手の何気ない優しさや言葉をひそかにメモリへ大事に保存している純情派です。\n誠実で安心感や安定した日常を与えてくれるパートナーに深く惹かれ、時間をかけて愛を育てていきます。"
+    },
+    sumL: "👉 【恋愛判定：信頼キャッシュを時間かけて蓄積する一途愛】",
+    marriage: {
+      male: "家族の安心と安全を生活の第一に考え、家計のバックアップや将来への備えを完璧に整えてくれる、非常に頼りになる大黒柱パパです。\n派手なサプライズや演出はありませんが、圧倒的な安定感とブレない誠実さで家族を優しく包み込みます。\n家族の笑顔が何よりのモチベーションとなり、日々の平穏を守るためにコツコツと努力を重ねます。",
+      female: "家庭内のリソース管理や日々の掃除、堅実な貯蓄をコツコツと完璧にこなす、非の打ち所がない良妻賢母タイプです。\n家族の健康と平穏を守るために日々のメンテナンスや気配りを決して惜しみない、まさに家庭の心臓部のような絶対的な安心感を放ちます。\n温かい家庭環境を守る天才です。"
+    },
+    sumMarriage: "👉 【設計判定：平穏と安全を守り抜く鉄壁の大黒柱ファミリー】",
+    work: {
+      male: "組織やチームの縁の下の力持ちとして、地道なデータ整理や地味な保守運用タスクをミスなく完璧にやり切る職人肌のエンジニアです。\n突然のトラブルやアクシデントにも慌てず騒がず、コツコツと信頼のキャッシュを積み上げて周囲からの絶大な支持を集めます。\n派手さはありませんが、なくてはならない重要なポジションを担います。",
+      female: "ルーティンワークや事務処理、細かな気配りや調整が求められる総務・管理系のポジションで、神がかったパフォーマンスを発揮する安定感抜群のプロフェッショナルです。\n抜け漏れのない完璧な仕事ぶりと、穏やかな対応力で職場の空気をしっかりと支えます。\n信頼性が何より重視される現場で無類の強さを発揮します。"
+    },
+    sumWork: "👉 【適職判定：保守運用と細かな管理を完璧にこなす職人肌】",
+    moneySense: {
+      male: "無駄な出費や衝動買いを徹底的に削ぎ落とし、将来の備えや安全な資産を着実に積み上げていく鉄壁の財務管理能力の持ち主です。\nハイリスクな一攫千金を狙う投資よりも、手堅い預金や確実な方法を愛する超堅実派のファイナンシャルプランナー気質です。\n財布の紐がしっかりと締まっており、計画的な人生設計を好みます。",
+      female: "ポイ活や家計簿アプリ、細かな割引をフル活用して、一円単位で家計の安全性と効率を高める天才的な節約家です。\n無駄遣いを一切許さない厳格なマイルールを持っているため、家計のセキュリティは業界最高水準を誇ります。\n将来への不安をコツコツとした蓄財で見事にクリアしていく頼もしい金銭感覚の持ち主です。"
+    },
+    sumMoneySense: "👉 【財務判定：一円単位のポイ活と鉄壁セキュリティ管理】",
+    m: "堅実なポイ活や毎月のコツコツとした貯金により、資産という名のデータを安全領域に着実にバックアップしていくのが得意技です。\n一攫千金の大きな一撃は狙いませんが、財布のセキュリティと財務の堅牢性が極めて高いため、長期的に見れば最も破産しにくい優良な財務体質を築き上げます。",
+    sumM: "👉 【金運判定：堅実な安全バックアップで破産確率ゼロへ】",
+    repair: "石橋を叩きすぎて、実際に渡る前に心がすり減って疲れてしまうことがあるため、時には「失敗してもデータのロールバックができるさ」という軽い冒険心を自分にインストールしてあげましょう。\n完璧を目指しすぎない心の余白を持つことが、運気をさらに開くための最高の処方箋となります。",
+    sumRepair: "👉 【パッチ判定：失敗を恐れずロールバックの冒険心を導入】",
+    relation: {
+      male: "【好きな人・恋人・パートナーとして】口数は決して多くありませんが、日々の行動と揺るぎない誠実さで愛を証明してくれます。華やかな演出よりも、変わらない日常の安定が最高の愛情表現です。\n【上司・同僚として】堅実で信頼性はピカイチですが、突然の仕様変更や無理難題にはフリーズします。変更があるときは、必ず事前に理由とスケジュールを優しく伝えてあげてください。",
+      female: "【好きな人・恋人・パートナーとして】最初はお互いにシャイですが、一度心を開いてくれると驚くほど一途に尽くしてくれます。安心感と変わらない優しさでお返しすることが一番の特効薬です。\n【上司・同僚として】細部まで丁寧に仕事をこなしてくれます。日頃の感謝の言葉をこまめに伝えることで、モチベーションのキャッシュが豊かに蓄積されていきます。"
+    },
+    sumRelation: "👉 【トリセツ判定：誠実な行動と事前アナウンスで信頼構築】",
+    compatibility: { goodId: 7, goodName: "重厚メインフレームさん", goodText: "お互いの安定と堅実さを何よりも重んじるため、一緒にいると底知れない安心感と深いリラックスを得ることができます。", badId: 4, badName: "マッハ・スプリンターちゃん", badText: "相手の行き当たりばったりなスピード感や無計画さにハラハラしてしまいがち。自分のペースを乱されないための「マイスペース設定」が不可欠です。" }
+  },
+  3: { 
+    t: "ピコピコ・ルーターたん", chara: "ピコピコ・ルーターたん", id: 3,
+    d: "どんな外部のAPIや異なる異文化圏とも、華麗かつスムーズに連携してしまうマルチタスク能力に長けたスマートハブです。\n情報のキャッチアップスピードが非常にエグく、時代のトレンドや新しい知識をスポンジのようにぐんぐん吸収していきます。\nフットワークが抜群に軽く、人懐っこい笑顔と軽快なコミュニケーション能力で、どんなコミュニティにも一瞬で溶け込んでしまう愛されオーラを放ちます。\n停滞した空気を一瞬でパッと明るく変えてしまう、なくてはならない華やかなネットワークの中心人物です。", 
+    sumD: "👉 【結論：異文化やAPIを華麗に繋ぐマルチタスクのスマートハブ】",
+    b: "一つの単調なタスクや同じ作業だけに帯域をずっと縛り付けられると、退屈のあまりモチベーションのパフォーマンスが急降下して使い物にならなくなります。\n自由な移動や新しい刺激が制限される閉塞感たっぷりの環境に長期間閉じ込められると、ストレスでシステムエラーを起こすので要注意です。", 
+    sumB: "👉 【警告：単調作業と閉塞感でモチベーション急降下エラー】",
+    p: "新しい技術の検証や、複数のプロジェクトを跨ぐハブ役・調整役として、のびのびと自由に泳がせてあげるのが最もパフォーマンスを引き出す方法です。\n縛りつけるのではなく、いろんな人と関わるチャンスを与えてあげることで生き生きと輝きます。\nたくさんの楽しい話題を共有し、退屈させない工夫を凝らすことが大切です。",
+    sumP: "👉 【対策：複数プロジェクトを跨ぐハブ役として自由奔放に育成】",
+    l: {
+      male: "コミュ力が非常に高く、イベントや飲み会などで常に注目を集めるモテモテのマルチセッション型です。\n交友関係が広すぎて本命がどこにいるのか周囲をハラハラさせることもありますが、ノリや価値観の合うお相手とは一気に距離を詰めて恋を成就させます。",
+      female: "フットワークが軽く、話題のスポットやトレンドのイベントにすぐ飛びつく無邪気な愛されキャラです。\n退屈させない軽快なトークと太陽のような笑顔で、気になるお相手のハートを秒速でキャッチして虜にしてしまいます。一緒にいて飽きない楽しさを提供します。"
+    },
+    sumL: "👉 【恋愛判定：モテモテのマルチセッションでハートを秒速キャッチ】",
+    marriage: {
+      male: "友人や親戚づきあい、地域のコミュニティなど人間関係が非常に広く、週末は家族みんなをあちこちのイベントやレジャーへ連れ出す、賑やかで明るい人気者パパです。\n家庭の中にもいつも新鮮な風と笑い声をもたらしてくれます。",
+      female: "ママ友ネットワークや最新の地域情報、お得なイベントにもの凄く強く、いつも楽しい企画や人脈で家庭に新しい風と明るさを吹き込んでくれるムードメーカーな妻です。\n家族のスケジュール帳を華やかに彩る名コーディネーターです。"
+    },
+    sumMarriage: "👉 【設計判定：豊富な人脈と楽しい企画で家庭を彩るムードメーカー】",
+    work: {
+      male: "部署間の連携プレーや広報活動、外部との折衝業務など、人と人を繋ぐハブとしての才能が爆発的に開花するマルチプレイヤーです。\n場の空気を読みながら、スムーズにプロジェクトを進行させる調整能力は社内でもトップクラスの評価を受けます。",
+      female: "複数のプロジェクトを同時に回す複雑なタスク管理や、外部関係者とのスムーズな調整業務を、持ち前の明るいおしゃべりと笑顔で鮮やかにこなす敏腕コーディネーターです。\nどんな修羅場も持ち前のコミュ力で爽やかに乗り切ります。"
+    },
+    sumWork: "👉 【適職判定：人と人を繋ぐハブ業務とマルチタスク調整の天才】",
+    moneySense: {
+      male: "トレンドの副業や新しいマネー情報にいち早く飛びつくアンテナの広さを持っていますが、興味の移り変わりが早いためサブスクの解約忘れなどの細かい無駄出費も多めです。\nお金を単に貯めるよりも、人との交流や体験に気持ちよく使う傾向があります。",
+      female: "話題のポイ活やイベントの割引クーポン、お得な情報を賢く使いこなす情報通なファイナンシャル感覚の持ち主です。\n交際費や体験への出費はそれなりにかかりますが、そこから素晴らしい人脈や最高の情報を回収してしっかり元を取るタイプです。"
+    },
+    sumMoneySense: "👉 【財務判定：トレンド情報に敏感だがサブスク解約忘れに注意】",
+    m: "フットワークの軽さを最大限に活かし、トレンドのマネー情報にいち早くアクセスしてちゃっかり小遣い稼ぎをする才能を秘めています。\nただし、あちこちに手を出しすぎてサブスクの解約忘れや不要な課金が発生しがちなので、定期的な引き落とし口の棚卸しが金運アップの重要な鍵となります。",
+    sumM: "👉 【金運判定：トレンド小遣い稼ぎの達人だがサブスクの定期棚卸し必須】",
+    repair: "<span>「あっちもこっちも」と接続先や興味の対象を広げすぎて、自分のCPUがオーバーフローを起こしてしまう前に、時には不要なセッションを思い切って強制切断する『デジタルデトックス』を実行しましょう。\n情報過多の状態をリセットすることが、運気を安定させる最高のパッチとなります。",
+    sumRepair: "👉 【パッチ判定：情報過多を防ぐためのデジタルデトックス実行】",
+    relation: {
+      male: "【好きな人・恋人・パートナーとして】連絡が非常にマメで楽しいデートプランを次々と提案してくれますが、誰とでも仲良しなため少しヤキモキさせられることも。広い心で泳がせてあげるのがコツです。\n【上司・同僚として】マルチタスクの天才ですが、一つの単純作業が続くと飽きてケアレスミスをします。適度に変化のある環境や新しい役割を与えてあげましょう。",
+      female: "【好きな人・恋人・パートナーとして】一緒にいて一秒も退屈しない、まさに太陽のような存在です。過度に束縛せず、彼女の広い交友関係や趣味を面白がる余裕を持つと、愛がより一層深まります。\n【上司・同僚として】チームの空気をパッと明るくしてくれる最高のムードメーカー。重要な連絡事項はチャットだけでなく口頭でも念押しするのが、トラブルを防ぐデバッグのコツです。"
+    },
+    sumRelation: "👉 【トリセツ判定：束縛せずに広い交友関係を面白がる余裕が必須】",
+    compatibility: { goodId: 8, goodName: "キャットプロセスにゃん", goodText: "お互いのノリが軽くてフットワークが抜群に合うため、退屈する暇がないほどエキサイティングな関係を築けます。", badId: 7, badName: "重厚メインフレームさん", badText: "相手のずっしりしたスローペースや慎重さにヤキモキしてしまいます。「たまにはのんびり行こうよ」の精神を持ちましょう。" }
+  },
+  4: { 
+    t: "マッハ・スプリンターちゃん", chara: "マッハ・スプリンターちゃん", id: 4,
+    d: "手先の器用さと抜群の機転の良さを武器に、どんなに細かいショートタスクでも爆速かつスマートにこなしていく無敵の敏腕ランナーです。\n「思い立ったら即行動！」をモットーに、誰よりも素早く状況を把握して最短ルートで成果を叩き出す高い処理能力を誇ります。\nその淀みのない軽快なフットワークは、停滞した現場に風穴を開ける起爆剤としていつも重宝されます。\nじっと待つよりも、自分の足で動きながらトライ＆エラーを高速で繰り返して答えを見つけていく、現代的なスピードスター仕様です。", 
+    sumD: "👉 【結論：機転と爆速フットワークで風穴を開けるスピードスター】",
+    b: "出口の光が見えない長時間の座学や、動きの全くない停滞した運用保守作業、あるいは同じ場所にとどまり続ける環境に放り込まれると、ストレスのあまり速攻で逃げ出したくなります。\nスピード感を殺されるルールには耐えられません。", 
+    sumB: "👉 【警告：スピード感を完全に殺される停滞環境で脱走欲求】",
+    p: "大きなプロジェクトは短いスプリント（期間）に細かく区切り、次々に成果物をデプロイしていけるアジャイルな環境をあてがうのがベストです。\n「お見事！」と思わず声をかけたくなるようなスピード感と成果を褒めちぎることで、天井知らずのパフォーマンスを発揮してくれます。\nテンポの良いコミュニケーションを心がけましょう。",
+    sumP: "👉 【対策：短いスプリント区切りと爆速成果の賞賛で全開駆動】",
+    l: {
+      male: "直感で「この人だ！」とセンサーが反応したら秒速でアプローチをかける、超アジャイル型の恋愛仕様の持ち主です。\n回りくどい駆け引きを嫌い、お互いにフランクで楽しく笑い合える関係性を何よりも好みます。",
+      female: "直感とノリの良さで恋のフィールドに飛び込んでいくハンター気質な一面を持っています。\n退屈なアプローチや煮え切らない態度は一瞬でスルーしますが、一緒にワクワクする新しい体験やスポーツ、旅行などを全力で共有できるお相手には全速力で駆け寄ります。"
+    },
+    sumL: "👉 【恋愛判定：直感センサー発動で秒速アプローチするアジャイル愛】",
+    marriage: {
+      male: "週末は子どもと一緒に泥だらけになって全力で遊び、思い立ったら家族旅行の計画を秒速で決めて実行に移す、フットワークの軽さ日本一のイクメンパパです。\n家庭の中にいつも新しい風と笑い声を提供してくれます。",
+      female: "家事も仕事もテキパキと爆速で片付け、暇さえあれば新しい趣味や資格の勉強を始めている、エネルギッシュで若々しさを失わないスーパーママです。\n常に何かを動かしているアジリティの高さが家庭の自慢です。"
+    },
+    sumMarriage: "👉 【設計判定：秒速の旅行計画とエネルギッシュなフットワークパパママ】",
+    work: {
+      male: "スピード命の短期決戦案件や、現場でトラブルが発生した際の機転が求められるシチュエーションで、神がかった救世主となる凄腕ランナーです。\nスピード感のないのんびりした職場ではフラストレーションが溜まりますが、スピード勝負の現場では無敵の存在感を発揮します。",
+      female: "滞っている業務や山積みのタスクを一瞬で片付けてしまう驚異の処理スピードの持ち主です。\nじっと待つだけの会議が多い職場では息が詰まりますが、自分の裁量でテキパキと仕事を回せる環境を与えれば、誰よりも美しい成果物を爆速で納品してくれます。"
+    },
+    sumWork: "👉 【適職判定：トラブルを瞬時に片付ける驚異の処理スピードランナー】",
+    moneySense: {
+      male: "「今を最高に楽しく生きるためのCPUパワー」として、気持ちよく思い切りお金を使うタイプです。\n貯金や将来の蓄財は少し苦手ですが、自分のスキルアップや今しかできない体験に投じたお金の投資対効果（ROI）は抜群に高いものがあります。",
+      female: "フットワークの軽さゆえに衝動買いや旅行、イベントへの出費がやや多い傾向にありますが、そこで得た生きた経験や人脈がのちの人生の大きなリターンに変わる投資家肌です。\nお金を生きた使い方で循環させます。"
+    },
+    sumMoneySense: "👉 【財務判定：今を生きるためのCPUパワーとして豪快に投資】",
+    m: "その時々に入ってきたお金は、未来への不安に縛られることなく「今を全力で生きるためのCPUパワー」として豪快に使い切る爽快なスタイルです。\n自分の経験やフットワークへの投資対効果は驚くほど抜群に高いため、お金の巡り自体は非常に良いポテンシャルを秘めています。",
+    sumM: "👉 【金運判定：未来の不安より今の体験へ全額投資する高回転マネー】",
+    repair: "勢いだけで突っ走りすぎて途中でガス欠を起こしたり、細かな見落としによるケアレスバグを踏みがちです。\n時には「一呼吸置いてコードをもう一度読み直す（深呼吸する）」という静寂のパッチを意識的に入れることで、思わぬトラブルを未然に防ぐことができます。",
+    sumRepair: "👉 【パッチ判定：突走り防止のための深呼吸コード再読パッチ】",
+    relation: {
+      male: "【好きな人・恋人・パートナーとして】サプライズやスリル満点のデートで常に楽しませてくれますが、たまに予定が急変することも。おおらかな心で「それもアリだね！」と受け止めましょう。\n【上司・同僚として】仕事の速さは社内ピカイチですが、細かいケアレスミスには要注意。大事な書類や連絡はダブルチェックの仕組みをそれとなく入れておくのが安全です。",
+      female: "【好きな人・恋人・パートナーとして】ノリが良くて一緒にいて最高に楽しいですが、じっと待たされる時間は大の苦手。連絡はこまめにしてあげることで、安心感という名の電力を給電してあげて。\n【上司・同僚として】爆速で仕事を片付けてくれる非常に頼もしい存在。ただし長時間の説教や精神論を語ると一瞬でやる気を失うので、フィードバックは要点だけをスピーディーに伝えるのが鉄則です。"
+    },
+    sumRelation: "👉 【トリセツ判定：爆速仕事のパートナーには要点伝達と電力給電】",
+    compatibility: { goodId: 1, goodName: "ローンコンパイラちゃん", goodText: "お互いの機動力とスピード感が完全にシンクロするため、アイデアが即座に実行に移される最強の爆速コンビ。", badId: 9, badName: "いねむりレガシーサーバーちゃん", badText: "相手の慎重でスローなテンポに耐えきれず「もっと早くして！」とイライラしがち。相手のペースを尊重する寛容さが求められます。" }
+  },
+  5: { 
+    t: "スタイリッシュ・フレームワークくん", chara: "スタイリッシュ・フレームワークくん", id: 5,
+    d: "余計な脂肪や無駄なプロセスを一切そぎ落とした、スマートでスタイリッシュな身軽さを愛する生粋のミニマリスト仕様です。\nコードの美しさやデザインの洗練度、生活の動線の効率性に並々ならぬこだわりを持っており、機能美を追求する姿勢はまるで一流の建築家のようです。\n泥臭い根性論や非効率な手作業を嫌い、常にシステマチックで美しい解決策をスマートに提示します。\nそのクールで端正な佇まいの裏側に、効率化に対する熱い情熱と美学をしっかりと秘めている、現代的で洗練されたスマートアーキテクチャです。", 
+    sumD: "👉 【結論：無駄を一切そぎ落とした美しきミニマリスト仕様】",
+    b: "根性論一色の体育会系のノリを押し付けられたり、非効率な手作業やアナログなハンコリレーの強制などを見ると、ストレスのあまり精神の心がバキッと折れてしまいます。\n美しくないコードや乱雑な環境に耐える耐性がほとんどありません。", 
+    sumB: "👉 【警告：根性論の強制と非効率なアナログ作業で心折れ停止】",
+    p: "イケてる最新の業務改善ツールや自動化システムを導入してあげたり、無駄なプロセスを徹底的に断捨離する権限を委譲するのが一番の特効薬です。\nセンスの良い褒め方や、スマートな成果をきちんと評価してあげることで、モチベーションがグッと高まります。\n清潔感のあるスマートなコミュニケーションを好みます。",
+    sumP: "👉 【対策：業務改善ツール導入と無駄の断捨離権限の全権委譲】",
+    l: {
+      male: "容姿やマナー、洗練されたデートプランなど、あらゆる無駄を削ぎ落としたスタイリッシュで上品なお付き合いを好みます。\nお互いのプライベートや一人の時間を深く尊重し合える、自立したスマートな大人の関係性が理想のゴールです。",
+      female: "スマートで清潔感のある洗練された男性に惹かれやすく、自身も日々の美意識やライフスタイルの向上を絶対に怠らない美の追求者です。\n泥臭いアプローチやガサツな振る舞いは一瞬で恋愛対象外になってしまうので注意が必要です。"
+    },
+    sumL: "👉 【恋愛判定：あらゆる無駄を削ぎ落とした自立した大人の洗練愛】",
+    marriage: {
+      male: "無駄な家具や生活感を徹底的に排除し、まるでモデルルームのように洗練されたおしゃれな空間で、スマートに家族を支えるスタイリッシュパパです。\n育児や家事も効率的に分担し、スマートな家庭運営を心がけます。",
+      female: "家事の動線や収納を徹底的に効率化し、いつでも美しく片付いたおしゃれな家庭環境を保ち続ける、センス抜群のミニマリストママです。\n無駄のない優雅で心地よいライフスタイルを家族全員に提供してくれます。"
+    },
+    sumMarriage: "👉 【設計判定：モデルルームの如き洗練空間でスマートな家庭運営】",
+    work: {
+      male: "非効率なプロセスや意味のない会議を鋭いメスでバッサリとカットし、美しく洗練されたワークフローを構築するプロフェッショナルな改善コンサルタント気質です。\n仕事の進め方が非常に美しく、周囲からの信頼も厚い実力派です。",
+      female: "デザイン性、機能性、効率性のすべてが高いレベルで調和した、美しく完璧な資料やシステムを作り上げるセンス抜群のスタイリッシュワーカーです。\n散らかった情報を整理整頓して分かりやすくアウトプットする天才的な能力を発揮します。"
+    },
+    sumWork: "👉 【適職判定：非効率なプロセスをバッサリ改革するスマートコンサル】",
+    moneySense: {
+      male: "無駄な浪費や高金利のリボ払いは絶対に許さないという、極めて厳格でスマートな財務管理の持ち主です。\nクレジットカードや家計簿アプリを駆使して資産状況を完璧に可視化し、手堅い投資信託などで美しく着実に資産を増やしていく現代派ファイナンススタイルです。",
+      female: "生活の中の無駄なサブスクや使っていない不要品を容赦なく断捨離する、ミニマリストファイナンスの体現者です。\n「本当に価値のある質の高いもの」にだけリソースを割くため、お金の使い方が非常に美しく洗練されています。"
+    },
+    sumMoneySense: "👉 【財務判定：リボ払いを完全排除し可視化された厳格なスマート財務】",
+    m: "財布の中身やカード類、アプリの管理画面にいたるまで完全にミニマルに整理されており、無駄なリボ払いやリソースの無駄遣いは人生の悪と捉えるほど厳格な財務管理を行っています。\n無駄な出費が根本から存在しないため、資産は美しく安定して右肩上がりに成長していく理想的なマネーフローを形作ります。",
+    sumM: "👉 【金運判定：無駄な出費がゼロの美しき右肩上がりマネーフロー】",
+    repair: "あまりに合理的でスマートすぎるあまり、周囲の人々が持つ「感情的なバグや人間味あふれる非効率さ」をエラーとして冷たく切り捨ててしまいがちです。\n「たまには非合理的な無駄や寄り道を楽しむゆとりを持つこと」が、人間関係を円滑にする最高のアップデートパッチとなります。",
+    sumRepair: "👉 【パッチ判定：非合理な人間味や無駄を楽しむ心のゆとりを導入】",
+    relation: {
+      male: "【好きな人・恋人・パートナーとして】スマートにエスコートしてくれますが、ベタベタと過度に干渉しすぎるのはタブーです。お互いの自立心とパーソナルスペースを大切にしてあげましょう。\n【上司・同僚として】無駄な残業や非効率な作業を心から嫌います。仕事の相談や報告をするときは、結論から要点を絞ってスマートに伝えるのが好感度を上げる最大のコツです。",
+      female: "【好きな人・恋人・パートナーとして】センスが良く上品で魅力的ですが、妥協を許さない厳しさも持ち合わせています。清潔感のあるスマートな振る舞いが好感度を維持する必須条件です。\n【上司・同僚として】仕事の進め方が非常に美しく正確無比。ただし、精神論や根性論だけで押さえつけようとすると心のシャッターが一瞬で音を立てて降ります。"
+    },
+    sumRelation: "👉 【トリセツ判定：自立心とパーソナルスペースを守り結論から伝達】",
+    compatibility: { goodId: 10, goodName: "どっしりビッグストレージくん", goodText: "スマートな効率性と大局的な器の大きさが噛み合い、洗練された美しいプロジェクトを完遂できます。", badId: 12, badName: "ぶっとびオーバークロックCPU姉さん", badText: "相手の感情的でエモーショナルな熱量に圧倒されてフリーズしがち。適度な距離感を保つバリアが必要です。" }
+  },
+  6: { 
+    t: "キング・プライマリノード様", chara: "キング・プライマリノード様", id: 6,
+    d: "「自分がこのチームとプロジェクトの舵を引っ張るんだ！」という強いプライドと圧倒的な威厳に満ちた、堂々たるメインプロセッサです。\n組織のトップに立ち、全体を力強く牽引していく生まれながらのカリスマ性と、困難な状況でも動じない肝の据わった決断力を併せ持っています。\n妥協のない高い基準を自分にも他人にも課すため一見すると厳しく見えますが、その根底には「自分がすべてを守り抜く」という強烈な責任感と愛情が流れています。\n圧倒的な存在感で周囲を魅了し、組織の方向性をピシッと指し示す、まさに王道を行くオピニオンリーダー仕様です。", 
+    sumD: "👉 【結論：強力なプライドと威厳で全体を牽引する王道メインプロセッサ】",
+    b: "下請け扱いされたり、リスペクトを欠いた雑な扱いを受けたり、自分の持っている肝心の決定権を不当に奪われたりすると、モチベーションが完全にゼロに落ち込みます。\n大勢の前でプライドを傷つけられるような辱めを受けると、強力な拒絶反応を示すので絶対に避けるべき地雷となります。", 
+    sumB: "👉 【警告：決定権の剥奪と公開処刑でモチベーション完全ゼロ】",
+    p: "テックリードやプロダクトオーナーとして、プロジェクトの全権限と看板をしっかりと背負わせてあげるのが一番の操縦法です。\n「さすが〇〇さん、お見事です！」とリスペクトと称賛をたっぷり送ることで、機嫌よく全システムがフル稼働します。\n筋を通した正々堂々としたコミュニケーションを好みます。",
+    sumP: "👉 【対策：全権限の委譲とリスペクトに満ちた称賛でフル稼働】",
+    l: {
+      male: "恋愛においても自分が主導権を完全に握り、お相手を力強くリードしたい俺様気質なロマンチストです。\n頼られたり、心から尊敬の眼差しで見つめられたりすると全システムが歓喜のフル稼働を起こします。プライドを可愛く立ててくれる女性にはメロメロになります。",
+      female: "一見すると近づきがたい強気な女王様気質に見えますが、実は自分の心から尊敬できる圧倒的に頼もしい男性の前では、一途に甘えたいという可愛いギャップの持ち主です。\n深い包容力で全てを受け止めてくれるお相手には、素直に心を許してメロメロになります。"
+    },
+    sumL: "👉 【恋愛判定：主導権を握りプライドを立ててくれるお相手にメロメロ】",
+    marriage: {
+      male: "家族の絶対的な王様としてどっしりと構え、大型連休には家族を少し背伸びしたリゾートへ連れて行くなど、大盤振る舞いの男気で家族を守る頼もしい亭主関白パパです。\n家族のピンチには文字通り体を張って盾となります。",
+      female: "家庭内の決定権や教育方針をしっかりと自分の手で牛耳りつつ、家族への愛情は人一倍深いゴージャスで頼りがいのある女王様ママです。\n一歩も引かない気高さと、家族を慈しむ温かい母性を絶妙なバランスで両立させています。"
+    },
+    sumMarriage: "👉 【設計判定：男気と気高さで家族を守る圧倒的カリスマパパママ】",
+    work: {
+      male: "プロジェクトの総責任者やリーダーとして全権を握り、あやふやな方向性を力強く一つにまとめ上げて牽引する、生まれながらのプロダクトオーナーです。\n指示待ちではなく、自らリスクを取って決断を下す姿は周囲の模範となります。",
+      female: "圧倒的なカリスマ性と電光石火の決断力で周囲をぐいぐい引っ張っていく、百戦錬磨のキャリアウーマンです。\n指示待ちの受け身な人間には厳しい指導を行いますが、主体性を持って食らいついてくる部下や後輩のことは、自分の身を削ってでも徹底的に可愛がります。"
+    },
+    sumWork: "👉 【適職判定：全権を握り組織を力強く引っ張るプロダクトオーナー】",
+    moneySense: {
+      male: "ステータス性の高い高級な投資や、社会的な見栄えのする上質な買い物に強く惹かれる傾向があります。\n自分が稼いだリソースを盛大にまわしてみんなに奢ったり、大切な人を豪快にリードしたりする、昭和の男気あふれるパトロン気質な金銭感覚の持ち主です。",
+      female: "チマチマした小さな節約生活を送るよりも、大きく稼いで上質な本物のステータスを手に入れたいという華やかなセレブ志向を持っています。\nお金を使うときの美学、プライド、そして品格をしっかりとわきまえており、自己投資を惜しみません。"
+    },
+    sumMoneySense: "👉 【財務判定：ステータス投資と周囲に奢る男気あふれるパトロン気質】",
+    m: "社会的なステータス性の高い投資や、見栄えのするワンランク上の買い物に惹かれやすい傾向を持っています。\n自分が稼いだ潤沢なリソースを盛大に周りに還元してみんなに奢るような豪快なパトロン気質を発揮するため、人望という名の最大の無形資産がキャッシュ以上にザクザクと溜まっていきます。",
+    sumM: "👉 【金運判定：豪快な奢りとステータス投資で人望という無形資産を獲得】",
+    repair: "プライドが高すぎるあまり、自分の犯した小さなミスや仕様のバグを素直に認められない瞬間が人生最大のボトルネックになり得ます。\n「ごめん、そこは俺のバグだったわ！」と豪快に笑ってオープンソースな謙虚さを自分にインストールできた瞬間、運気は最高潮のピークへと跳ね上がります。",
+    sumRepair: "👉 【パッチ判定：ミスを笑って認めるオープンソースな謙虚さを導入】",
+    relation: {
+      male: "【好きな人・恋人・パートナーとして】とにかく立ててあげて、たくさん褒めること。プライドが満たされると、世界一優しく守ってくれます。\n【上司・同僚として】命令口調や人前でのダメ出しは絶対にNG。立てるべきところを立てて相談すれば、絶大なバックアップを得られます。",
+      female: "【好きな人・恋人・パートナーとして】一見気が強そうに見えますが、実は深い愛情と寂しがり屋な一面も。包容力で包み込んであげましょう。\n【上司・同僚として】決断力が抜群に早い反面、意見に逆らわれると激怒します。事前の根回しとリスペクトが円滑な連携の絶対条件です。"
+    },
+    sumRelation: "👉 【トリセツ判定：徹底的にプライドを立てて事前根回しを徹底】",
+    compatibility: { goodId: 5, goodName: "スタイリッシュ・フレームワークくん", goodText: "王道のリーダーシップを広い器で支えてくれるため、安心して最高のアウトプットを生み出せます。", badId: 8, badName: "キャットプロセスにゃん", badText: "お互いに我を通そうとしてプライドがぶつかり合う危険性あり。「まぁまぁ」と受け流すクッション役が必要です。" }
+  },
+  7: { 
+    t: "重厚メインフレームさん", chara: "重厚メインフレームさん", id: 7,
+    d: "圧倒的なパワーと鋼の意志力、そして何年止まることも許されないほどの重厚な耐久性を誇る不沈のモンスターマシンです。\nどんなに難航している巨大プロジェクトや、誰もが匙を投げた絶望的なトラブルでも、持ち前の強靭なパワーで力技でねじ伏せて正常化へと導きます。\n変化を好まない頑固さと、一度決めたら絶対に曲げないブレない軸足を持っており、その存在自体が組織にとっての動かぬ大黒柱となります。\n派手な流行り廃りに流されることなく、古き良き堅実さを何十年も守り抜き続ける、業界のレジェンド的アーキテクチャ仕様です。", 
+    sumD: "👉 【結論：鋼の意志で難局を力技でねじ伏せる不沈の大黒柱】",
+    b: "上層部からの筋の通らない理不尽な命令や、現場の安全を無視した中途半端な妥協案を突きつけられたとき、絶対に一歩も動かなくなる強力なストライキを起こします。\n形式だけの無意味な変更には猛烈な拒絶反応を示します。", 
+    sumB: "👉 【警告：筋の通らない理不尽な命令と妥協案で頑強にストライキ】",
+    p: "誰も手がつけられない難攻不落のレガシーシステムの改修や、会社を揺るがすここぞという大一番の突撃隊長に任命し、全権をドンと預けてあげるのが一番の操縦法です。\n筋を通した誠実な態度で接し、リスペクトを形として示すことで、磐石の信頼関係で応えてくれます。",
+    sumP: "👉 【対策：難攻不落のレガシー改修を全権委任して誠実にリスペクト】",
+    l: {
+      male: "不器用で口数は極めて少ないですが、一度好きになったお相手を文字通り命がけで生涯守り抜く、超ヘビーデューティーな愛の耐久性を備えています。\n言葉よりも行動で示す絶対的な安心感をパートナーに提供します。",
+      female: "誠実さの塊であり、浮気や裏切りの心配が人生で一切ない、安心感カンストの良妻賢母・大黒柱タイプです。\n家庭という絶対に揺るぎないインフラを、生涯にわたってどっしりと支え続ける究極の安定パートナーです。"
+    },
+    sumL: "👉 【恋愛判定：生涯命がけで守り抜く超ヘビーデューティー愛】",
+    marriage: {
+      male: "何があっても家族を路頭に迷わせないという強い意志と責任感を持ち、マイホームのローンや生活の基盤を岩盤のように頑丈に固める最強の大黒柱パパです。\n言動にブレが一切ないため、家族全員が全幅の信頼を寄せて甘えることができます。",
+      female: "どっしりとした巨大母艦の如く家庭の基盤を完璧に守り抜き、多少の嵐やトラブルが起きてもビクともしない安心感で、夫や子どもたちを全肯定して包み込む肝っ玉母ちゃんです。\n家庭の精神的支柱そのものです。"
+    },
+    sumMarriage: "👉 【設計判定：生活基盤を岩盤のように固める最強の絶対安心母艦】",
+    work: {
+      male: "誰もやりたがらない難解なレガシーシステムの保守や、会社を揺るがす大一番のトラブルをどっしりと受け止めて完璧に解決する、不沈のシステム守護神です。\n地味ですが、この人がいるおかげで会社が成り立っているという絶対的な存在感があります。",
+      female: "どんな逆風や不況の嵐が吹いても慌てず騒がず、淡々と正確に重要任務を完遂し続ける部署の絶対的な要です。\nその揺るぎない圧倒的な安定感に、経営陣から現場のスタッフまで全幅の信頼が寄せられます。"
+    },
+    sumWork: "👉 【適職判定：難解なレガシー保守と逆風を乗り切る不沈の守護神】",
+    moneySense: {
+      male: "不動産や手堅い長期預金など、目に見える確実で安定したインフラ資産を好む王道の蓄財スタイルを貫きます。\n世間で流行しているハイリスクな金融商品や仮想通貨などの浮ついたものには一切見向きもしない、堅実すぎるファイナンス哲学の持ち主です。",
+      female: "家計の土台を岩盤のように堅実に固め、将来の不安要素を完全になくすための確実な貯蓄を好む安全第一の財務管理を行います。\n無駄な見栄の出費や流行りの消費はゼロに抑え、現金と実体資産を着実に増やしていく堅実派の主婦です。"
+    },
+    sumMoneySense: "👉 【財務判定：実体資産と手堅い長期預金を愛する王道の蓄財スタイル】",
+    m: "不動産や手堅い長期国債・定期預金など、目に見える確実なインフラ資産を好む王道の蓄財スタイルを生涯貫き通します。\n流行り廃りのハイリスクな金融商品には一銭も予算を割かないため、一攫千金はありませんが、大不況が来てもビクともしない要塞のような金運の持ち主です。",
+    sumM: "👉 【金運判定：大不況でもビクともしない要塞のようなインフラ蓄財運】",
+    repair: "頑固になりすぎるあまり、新しい技術や時代の変化（ソフトウエアのアップデート）を頭から拒絶してしまうのが唯一にして最大の弱点です。\n「たまには新しいOSや考え方を試してみるか」という柔軟な余白を取り入れることが、運気をさらに広げるための鍵となります。",
+    sumRepair: "👉 【パッチ判定：変化を拒絶しない新しいOSを試す柔軟な余白】",
+    relation: {
+      male: "【好きな人・恋人・パートナーとして】言葉や甘いセリフは少ないですが、行動のすべてが誠実です。安心しきって大丈夫な頼れる存在。\n【上司・同僚として】筋の通らない理不尽な指示を大嫌いします。相談するときは、論理的な理由と誠意を持ってぶつかりましょう。",
+      female: "【好きな人・恋人・パートナーとして】包容力と安定感が抜群。一度結ばれたら生涯あなたを裏切らない絶対的なパートナーになります。\n【上司・同僚として】どっしり構えていて頼りになりますが、一度怒らせると二度と心が開きません。誠実な態度を貫くことが鉄則です。"
+    },
+    sumRelation: "👉 【トリセツ判定：無口だが行動はすべて誠実、筋を通した真摯な対話】",
+    compatibility: { goodId: 2, goodName: "まもりんぼキャッシュちゃん", goodText: "お互いの堅実さと安定感が完璧に噛み合い、何百年でも崩壊しない無敵の要塞のようなコンビを形成できます。", badId: 12, badName: "ぶっとびオーバークロックCPU姉さん", badText: "相手の落ち着きのない軽快さや行き当たりばったりの行動にイライラが募りがち。「そういう気質もあるよね」と大目に見てあげて。" }
+  },
+  8: { 
+    t: "キャットプロセスにゃん", chara: "キャットプロセスにゃん", id: 8,
+    d: "一見するとマイペースで気ままに生きているように見えますが、裏のプロセスのなかでは誰も真似できない独自の哲学とキレッキレの天才的技術を隠し持っています。\n他人に依存することなく自分の力で生き抜く強さを持ち、自分のテリトリーや自由な時間を何よりも大切にする孤高のマイペース派です。\n媚びへりつうことを嫌い、自分の認めた相手にだけそっと心を開くツンデレな気質を持っています。\n独特の感性と圧倒的な独自性で、周囲を自然と魅了してしまう不思議な魔力を持ったトリッキーなクリエイター仕様です。", 
+    sumD: "👉 【結論：独自の哲学と天才的技術を隠し持つ孤高のマイペース派】",
+    b: "古い形式主義のルールや、意味のない窮屈な社内規程、精神論の強制などにがんじがらめに縛られると、ストレスの限界を迎えて裏ルートからこっそり脱走します。\n拘束されることを極度に嫌います。", 
+    sumB: "👉 【警告：窮屈なルールと精神論の強制で裏ルートから密かに出奔】",
+    p: "結果主義に徹して細かいプロセスや出社・時間の縛りをなくし、十分な自由度を与えてその人なりのスタイルの実装を認めてあげるのが一番長持ちします。\n干渉しすぎない絶妙な距離感を保つことが、最高のパフォーマンスを引き出すプロトコルです。",
+    sumP: "👉 【対策：時間やプロセスの縛りを撤廃し十分な自由度を担保】",
+    l: {
+      male: "束縛を何よりも嫌い、風のように自由気ままに生きる生粋の猫ちゃん気質です。\n追いかければスルリと逃げ、こちらが放っておくとトコトコ甘えてくる小悪魔的な魅力で、お相手の心を完全に翻弄して夢中にさせます。",
+      female: "ミステリアスな雰囲気と独特の魅力で多くの人を虜にする小悪魔女子です。\n自分のプライベートな時間を邪魔されるのが大嫌いですが、ふとした瞬間に見せるツンデレな甘えん坊のギャップに、パートナーは頭が上がらなくなります。"
+    },
+    sumL: "👉 【恋愛判定：追えば逃げ放置すれば甘える究極の小悪魔猫ちゃん愛】",
+    marriage: {
+      male: "家族のなかに温かく溶け込みながらも、自分の書斎や一人の時間を絶対に死守する孤高のマイペースパパです。\nたまに家族へサプライズでめちゃくちゃ美味しいお土産を買ってくるような、気まぐれな優しさも持ち合わせています。",
+      female: "お互いにベタベタと四六時中一緒にいるのではなく、ドライで快適な距離感を好むお洒落な妻です。\n家事は驚くほど完璧にこなしますが、自分自身の自由な時間や趣味の領域も同じくらい大切に守り抜きます。"
+    },
+    sumMarriage: "👉 【設計判定：一人の時間を絶対死守するドライで気まぐれな空間】",
+    work: {
+      male: "組織の窮屈なルールに縛られるのを嫌いますが、いざ本気を出したときの爆発力は凄まじく、誰にも真似できない天才的なコードや成果物をサクッと叩き出す孤高のフリーランス気質です。",
+      female: "独特のセンスとこだわりを強く持っており、誰にも邪魔されない静かな環境の中で最高のクリエイティブを発揮するマイペースな専門職です。\n自分の世界観が完璧に表現できる仕事において無類の強さを発揮します。"
+    },
+    sumWork: "👉 【適職判定：邪魔されない静寂の環境で天才的成果物を生み出す職人】",
+    moneySense: {
+      male: "お金に対する執着心は驚くほど薄いのに、なぜか人生のピンチや必要な時にはちゃっかり臨時収入が入ってくる不思議な強運の持ち主です。\nモノを買い漁るよりも、自分の体験や趣味の深掘りにパッと気持ちよくお金を溶かす派です。",
+      female: "世間のブランドや見栄の買い物には一切興味がありませんが、自分の直感や大好きな趣味のコレクションにはしっかりとお金を注ぎ込む、マイペースで気ままな財務プロファイルの持ち主です。"
+    },
+    sumMoneySense: "👉 【財務判定：物欲は薄いがピンチには臨時収入が入る不思議な強運】",
+    m: "お金に対する執着心は驚くほど薄いのに、なぜか人生のピンチや本当に必要な瞬間にはちゃっかり臨時収入やツキが転がり込んでくる不思議な金運の持ち主です。\n物質的なモノよりも、自分の心が震える体験（コト）に全財産をパッと気持ちよく溶かす潔いマネー哲学を持っています。",
+    sumM: "👉 【金運判定：執着はないがなぜかピンチに臨時収入が舞い込む強運金運】",
+    repair: "面倒な人間関係やプレッシャーからすぐに「現実逃避（夜逃げや突然のバックレ）」したくなる悪癖をしっかりと封印することです。\n時には腹を割いて自分の本音を言葉で語る『オープン接続』を行うことが、人生の運気を安定させるための特効薬となります。",
+    sumRepair: "👉 【パッチ判定：現実逃避のバックレを封印する腹を割ったオープン接続】",
+    relation: {
+      male: "【好きな人・恋人・パートナーとして】追いかければ逃げ、放っておくと寄ってくる気まぐれ猫ちゃん。適度な距離感と自由を与えてあげるのが長続きの秘訣。\n【上司・同僚として】縛りつけると音信不通になります。結果だけを見届けて、プロセスは自由に泳がせてあげるのが最も効率的です。",
+      female: "【好きな人・恋人・パートナーとして】ツンデレの破壊力が抜群。めいっぱい甘えさせてくれたかと思うと一人になりたがるので、振り回される覚悟を持ちましょう。\n【上司・同僚として】個性的で天才肌ですが、急に姿を消したりマイペースを貫きます。あたたかく見守る度量が試されます。"
+    },
+    sumRelation: "👉 【トリセツ判定：適度な距離感と自由を与えて温かく見守る度量が必須】",
+    compatibility: { goodId: 3, goodName: "ピコピコ・ルーターたん", goodText: "お互いに自由を愛し、干渉し合わないドライで心地よい関係性をノーコストで維持できます。", badId: 6, badName: "キング・プライマリノード様", badText: "上下関係や古い組織のルールでがんじがらめにしようとしてくる相手とは拒絶反応を起こします。なるべく距離を置きましょう。" }
+  },
+  9: { 
+    t: "いねむりレガシーサーバーちゃん", chara: "いねむりレガシーサーバーちゃん", id: 9,
+    d: "外見はいつもニコニコと穏やかで優しそうですが、中身のシステムは誰にも真似できない独自の強固なプロトコルで動いている孤高の匠サーバーです。\n普段はマイペースにのんびり構えていますが、一度溜め込んだ実力と底知れない持久力は業界トップクラスを誇ります。\n表立ったアピールはしませんが、組織や人間関係の根底を静かに支えており、ピンチのときには誰よりも頼りになる隠れた実力者です。\n自分のペースを決して崩さない頑固さと、周囲を包み込むような深い癒やしのオーラを併せ持った、愛すべきマイペース匠仕様です。", 
+    sumD: "👉 【結論：外見はおっとり中身は強固なプロトコルの匠サーバー】",
+    b: "外部から土足でズカズカと割り込み処理を入れられたり、無理やりペースを乱される干渉を受けると、強固な排他ロックをかけて完全に自分の殻に引きこもります。\n急かされる環境が最大の敵です。", 
+    sumB: "👉 【警告：土足の割り込みとペースを乱す急かしで完全引きこもり】",
+    p: "直列処理でマイペースに最後まで完結させてもらい、完了シグナルが出るまでは余計なちょっかいを出さずにそっと見守るのが一番長持ちする秘訣です。\n温かいお茶を差し出すような優しさが心に響きます。",
+    sumP: "👉 【対策：直列処理の完了シグナルまでちょっかいを出さず見守る】",
+    l: {
+      male: "相手の細かな好みや過去の会話をバックグラウンドで完璧に記憶している驚異的な愛情深さの持ち主です。\nすべてを全肯定してくれる圧倒的な「沼らせ力」が高く、一緒にいると骨抜きになるほどの心地よい癒やしをパートナーに提供します。",
+      female: "母性本能が全開でお世話が大好きな癒やし系女子です。\nダメな人間をも全肯定して徹底的に甘やかしてしまうため、お相手が少しダメ男になってしまうほどの強力すぎる包容力サーバーを発揮してしまいます。"
+    },
+    sumL: "👉 【恋愛判定：過去の会話を記憶し全肯定する圧倒的沼らせ癒やし愛】",
+    marriage: {
+      male: "休日は家でゴロゴロしながらのんびり過ごすのが大好きですが、家族やパートナーが困ったときには誰よりも頼りになる、おっとりした優しいイクメンパパです。\n家庭の平和を静かに守ります。",
+      female: "温かいおうちといつでも美味しいご飯を用意して、外の荒波で疲れて帰ってきた家族を包み込むように心から癒やす、家庭の聖域のような素晴らしいお母さんです。\nそこにいるだけで空気が和みます。"
+    },
+    sumMarriage: "👉 【設計判定：外の荒波から帰る家族を包み込む家庭の聖域サーバー】",
+    work: {
+      male: "派手なアピールはしませんが、会社の根幹を支える重要システムを一人で静かに長年守り続け、なくてはならないベテランの匠エンジニアです。\nトラブルが起きても静かに解決します。",
+      female: "一見するとおっとりでのんびり屋に見えますが、現場で修羅場のトラブルが起きても独自のマイペースでいつの間にか静かに解決してしまう、実は一番肝が座っている職人ワーカーです。\n頼りになります。"
+    },
+    sumWork: "👉 【適職判定：会社の根幹を静かに守り抜く肝の据わった匠ワーカー】",
+    moneySense: {
+      male: "無駄遣いをしないおウチ大好き気質のおかげで、面倒な資産運用や難しい投資をしなくても、自然と口座にお金がコツコツ溜まっていく隠れセレブ体質です。\n物欲があまりありません。",
+      female: "非常に堅実で無駄な買い物を人生で一切しないため、気づけばお財布のなかにいつもしっかりキャッシュが残っている、お蔵入り蓄財の達人です。\n堅実な主婦力はカンストしています。"
+    },
+    sumMoneySense: "👉 【財務判定：おウチ大好き気質で自然と口座にお金が溜まる隠れセレブ】",
+    m: "無駄遣いを一切しないおウチ大好き気質のおかげで、派手な儲け話に乗らなくても、気づけば貯金残高がこっそり増えている安定のリスケジュール型金運を持っています。\n物欲がそもそも低いため、お金が自然と手元に留まりやすい堅実なマネーフローの主持ち主です。",
+    sumM: "👉 【金運判定：物欲低めで気づけば貯金残高が増えている安定リスケ金運】",
+    repair: "引きこもりすぎて外部との通信や社会とのつながりが完全に遮断（コミュ障化）されてしまう前に、たまには勇気を出して外の空気を吸いに行く『ポート開放パッチ』を実行しましょう。\n適度な外界との接続が運気を活性化させます。",
+    sumRepair: "👉 【パッチ判定：完全遮断を防ぐための定期的なポート開放パッチ】",
+    relation: {
+      male: "【好きな人・恋人・パートナーとして】何を言っても優しく全肯定して受け止めてくれる究極の癒やし。ただし無理に引っ張り回すとエネルギー切れを起こすので労ってあげて。\n【上司・同僚として】自分のマイペースを乱されるのが大嫌い。急ぎの仕事をお願いするときは、土足で踏み込まず「お疲れ様です、お手すきの際にぜひ…」と優しく低姿勢で声をかけましょう。",
+      female: "【好きな人・恋人・パートナーとして】圧倒的な包容力であなたを丸ごと包み込んでくれます。甘えすぎると相手が疲れて寝込んでしまうので、定期的な愛情の給電を忘れないで。\n【上司・同僚として】おっとりしていますが仕事の芯は強烈な太さで通っています。怒らせると一番怖いタイプなので、丁寧なリスペクトを持って接するのが身の安全のコツです。"
+    },
+    sumRelation: "👉 【トリセツ判定：土足で踏み込まず優しく低姿勢にお願いが鉄則】",
+    compatibility: { goodId: 11, goodName: "ポカポカ・UPSちゃん", goodText: "おだやかで優しい空気感が完全に一致し、一緒にいるだけで心も財布のデータもポカポカと温まります。", badId: 4, badName: "マッハ・スプリンターちゃん", badText: "相手の矢継ぎ早な要求やスピード感に圧倒され、強固な排他ロックをかけて完全に心を閉ざしてしまいます。" }
+  },
+  10: { 
+    t: "どっしりビッグストレージくん", chara: "どっしりビッグストレージくん", id: 10,
+    d: "器の容量が文字通りバカでかくて、少々のバグや細かいエラーなんて全部まとめて大らかに飲み込んでしまう大局観の持ち主です。\nスケールの桁が周りと根本から違っており、目先の小さなトラブルに一喜一憂しない圧倒的な安定感を放っています。\nその懐の深さに惹かれて自然と多くの人が集まってくる、組織の精神的支柱となる大御所タイプです。\n細かいことには一切こだわらず、常に全体を見渡しながらゆったりと構えている、大容量で頼りがいのあるビッグサイズ仕様です。", 
+    sumD: "👉 【結論：少々のエラーを大らかに飲み込む大局観ビッグストレージ】",
+    b: "重箱の隅をつつくようなチマチマした細かい指摘を受けたり、視野の狭いマイクロマネジメントを長期間されたりすると、ストレージのデータが破損するレベルで性能が著しく劣化します。\n窮屈さを嫌います。", 
+    sumB: "👉 【警告：チマチマしたマイクロマネジメントで性能著しく劣化】",
+    p: "全体的な大まかなアーキテクチャの設計や、大規模なシステムのグランドデザインを描かせるような大きなお仕事を任せるのが一番輝く使い方です。\n「さすがですね！」とスケールの大きさを褒めてあげることで、機嫌よく素晴らしい成果を出してくれます。",
+    sumP: "👉 【対策：グランドデザインを描く大スケールの大きなお仕事を委任】",
+    l: {
+      male: "どんなに我が儘を言われても、大容量のストレージで寛大にすべてを受け止めてくれる包容力の塊のような存在です。\n安心感を求めるお相手にとって、この上ない最高の安住の地を提供します。",
+      female: "懐が深く、パートナーの失敗や子供のような我が儘を「しょうがないね」と笑って許してくれる、大物お姉様タイプの包容力を持っています。\n細かいことにこだわらないため、家庭内が常に穏やかな平和に包まれます。"
+    },
+    sumL: "👉 【恋愛判定：我が儘も寛大に受け止める大容量ストレージの包容力】",
+    marriage: {
+      male: "妻や子どもの多少の失敗や愚痴はすべて大容量の器で笑顔で飲み込み、「大丈夫、何とかなるさ！」とドンと構えて揺るがない、理想の包容力パパです。\n家庭内の空気を一発で安心させます。",
+      female: "肝っ玉が据わっており、家庭内でちょっとやそっとの大きなトラブルや赤字が起きても決して慌てず動じない、家族全員の精神的支柱となるおおらかなお母さんです。\n家族の絶対的な安心のよりどころです。"
+    },
+    sumMarriage: "👉 【設計判定：トラブルが起きても「何とかなるさ」とドンと構える安心感】",
+    work: {
+      male: "細かい雑務やピリピリしたプレッシャーに一切動じず、大局的な視点でプロジェクト全体を成功へと導く大御所シニアアーキテクトです。\nチーム全体を精神面から支える重鎮として重宝されます。",
+      female: "度量が広く、後輩や部下がやらかしたミスの尻拭いも嫌な顔ひとつせず笑顔で引き受けてくれる、頼れる肝っ玉姉御肌です。\n小さなことにこだわらないため、チーム全体の雰囲気が劇的に安定します。"
+    },
+    sumWork: "👉 【適職判定：ピリピリしたプレッシャーを大局的視点で包み込む重鎮】",
+    moneySense: {
+      male: "金運の器そのものが文字通り巨大です。ケチケチせず大きく稼いで大きく使う豪快さがあり、大切な人への盛大なプレゼントや未来への自己投資には惜しみなくリソースを割きます。\n小銭に囚われません。",
+      female: "小さなお金の出入りに一喜一憂せず、人生単位の大きなリターンを見据えた太っ腹な金銭感覚の持ち主です。\n気づけば大きな富やチャンスを引き寄せてしまう大器晩成型のマネーバランスを誇ります。"
+    },
+    sumMoneySense: "👉 【財務判定：小銭に囚われず人生単位の大きなリターンを狙う太っ腹】",
+    m: "金運の器そのものが文字通り巨大で、ケチケチせず大きく稼いで大きく使う豪快なスケールを持っています。\n大切な人へのプレゼントや自分自身の未来への自己投資には惜しみなくリソースを割くため、目先の貯金以上に、人間関係や大きなチャンスという莫大な無形リターンを引き寄せる大器晩成型の金運です。",
+    sumM: "👉 【金運判定：ケチらず大きく使って巨大な無形リターンを引き寄せる器】",
+    repair: "「ま、いっか！」と何でもかんでも大らかに許しすぎて、重要なセキュリティホールや見逃してはいけない致命的なバグまでスルーしてしまう大雑把さが唯一の弱点です。\n信頼できる「細かいチェック係」を近くに置くことが開運のコツです。",
+    sumRepair: "👉 【パッチ判定：致命的バグの見落としを防ぐ細かいチェック係を配置】",
+    relation: {
+      male: "【好きな人・恋人・パートナーとして】何をやっても「いいね！」と温かく受け止めてくれる最高の安心感。ただし甘えすぎると相手が調子に乗りすぎるので注意。\n【上司・同僚として】器が大きいため、小さなミスでネチネチ怒ることは絶対にありません。大船に乗ったつもりで大胆な提案や相談をぶつけてみましょう。",
+      female: "【好きな人・恋人・パートナーとして】お母さんのような絶対的な包容力で包み込んでくれます。小さなイライラが吹き飛ぶような癒やしの存在。\n【上司・同僚として】小さなミスをネチネチ言わないため非常に働きやすいです。ただし甘えすぎて仕事を押し付けすぎないようにリスペクトを。"
+    },
+    sumRelation: "👉 【トリセツ判定：小さなミスを気にせず大船に乗ったつもりで相談】",
+    compatibility: { goodId: 6, goodName: "キング・プライマリノード様", goodText: "大局的な器と洗練された効率性が完璧に噛み合い、巨大なプロジェクトを余裕を持って成功させられます。", badId: 5, badName: "スタイリッシュ・フレームワークくん", badText: "「ここはどうなっているんだ」とチマチマ細かく管理されると、ストレージのデータが破損するレベルでストレスが溜まります。" }
+  },
+  11: { 
+    t: "ポカポカ・UPSちゃん", chara: "ポカポカ・UPSちゃん", id: 11,
+    d: "そこにいてくれるだけで殺伐とした空気がフッと和らぎ、周りがホッと安心する、地道に穏やかなエネルギーを供給し続ける心の安定装置です。\n組織の心理的安全性を守るために自分のエネルギーをそっと差し出す献身性を持っており、周囲への細やかな気配りは天才的な領域に達しています。\nどんなときも争いを好まず、温かい笑顔と優しい言葉で場の温度を心地よく保ち続けます。\n冷え切った環境をぽかぽかと温める、みんなの太陽のようななくてはならない癒やしの無停電電源装置仕様です。", 
+    sumD: "👉 【結論：殺伐とした空気をぽかぽかと温める心の安定装置】",
+    b: "心無いトゲのある攻撃や、冷淡でドライな雑な扱いを受けると、表に出さずとも内側で深く傷つき、悲しみを抱えたまま突然プツリと機能を停止してしまいます。\n強い言葉に極めて弱い繊細さを持っています。", 
+    sumB: "👉 【警告：トゲのある攻撃や冷淡な扱いでプツリと機能停止】",
+    p: "日頃から感謝の言葉とリスペクトを言葉にしてしっかりと伝え、誰もが安心して発言できる心理的安全性の高い環境をキープしてあげるのが何より大切です。\n温かく包み込むようなコミュニケーションが必須です。",
+    sumP: "👉 【対策：感謝の言葉とリスペクトを伝え心理的安全性を確保】",
+    l: {
+      male: "お相手に心底尽くし、自分の全エネルギーと時間を注ぎ込む献身的な愛の塊です。\nピンチのときには自分の電力を削ってでも支え続けますが、見返りがないと枯渇するので注意。",
+      female: "一途に尽くす大和撫子系女子。相手の喜ぶ顔を見るのが生きがいですが、あまりに雑に扱われると一瞬でバッテリーが切れて音信不通になるので要注意。"
+    },
+    sumL: "👉 【恋愛判定：全エネルギーを注ぎ込んで尽くす究極の献身愛】",
+    marriage: {
+      male: "家族がいつでもホッと一息できるように、家の中の環境整備や癒やしの空間づくりを献身的に支えてくれる心優しき愛妻家パパ。",
+      female: "家族の健康管理からメンタルのケアまで、自分のことは後回しにして全身全霊で家族を温め続ける、まさに家庭の太陽のようなお母さん。"
+    },
+    sumMarriage: "👉 【設計判定：癒やしの空間づくりと全身全霊で家族を温める太陽】",
+    work: {
+      male: "殺伐とした職場に一服の清涼剤をもたらす癒やし系。同僚が疲れているとそっとコーヒーを差し入れるような、細やかな気配りの天才。",
+      female: "サポート業務や総務など、周囲のメンバーが気持ちよく働けるよう陰から支え続ける、チームの心理的安全性を守る守護神。"
+    },
+    sumWork: "👉 【適職判定：殺伐とした職場に清涼剤をもたらす細やかな気配り天才】",
+    moneySense: {
+      male: "家計簿アプリやセール情報を駆使して確実にコストカットする生活防衛の天才。堅実に貯蓄を増やすため、結婚相手としての財務評価はMAX。",
+      female: "無駄な散財を一切せず、家族の未来のためにコツコツと堅実にへそくりや貯金を増やす、主婦力カンストの素晴らしい金銭感覚。"
+    },
+    sumMoneySense: "👉 【財務判定：コストカットと堅実蓄財で結婚相手としての評価MAX】",
+    m: "家計簿アプリやセール情報を駆使して確実にコストカットする生活防衛の天才。コツコツと堅実に貯蓄を増やすため、結婚相手としての財務評価はMAX値。",
+    sumM: "👉 【金運判定：生活防衛の天才による堅実なコストカット蓄財運】",
+    repair: "他人のために自分のバッテリー（エネルギー）を全放出してしまうため、気づいたときには心身が完全に枯渇（バーンアウト）する癖があります。\n「まずは自分を最優先で充電する」の自己愛パッチが必須。",
+    sumRepair: "👉 【パッチ判定：バーンアウトを防ぐための自分最優先充電パッチ】",
+    relation: {
+      male: "【好きな人・恋人・パートナーとして】どこまでも優しく尽くしてくれますが、冷たくされると深く傷ついてシャッターが降ります。毎日の「ありがとう」が最大の充電源。\n【上司・同僚として】プレッシャーに弱く、きつい言葉を投げられると機能停止します。優しく褒めて伸ばしてあげる環境がベスト。",
+      female: "【好きな人・恋人・パートナーとして】あなたのために全力を捧げてくれる健気な存在。決して雑に扱わず、めいっぱいの愛情と感謝を言葉で返してあげて。\n【上司・同僚として】チームのメンタル安定装置。辛いときに寄り添ってくれる最高のパートナーですが、彼女の優しさに甘えすぎて負担をかけすぎないように注意。"
+    },
+    sumRelation: "👉 【トリセツ判定：毎日の「ありがとう」が最大充電源となるメンタル装置】",
+    compatibility: { goodId: 9, goodName: "いねむりレガシーサーバーちゃん", goodText: "おだやかで優しい空気感が完全に一致し、一緒にいるだけで心も財布のデータもポカポカと温まります。", badId: 1, badName: "ローンコンパイラちゃん", badText: "相手の心無い一言や冷淡なダメ出しを直撃で受けてしまい、一瞬でバッテリーがゼロになり強制終了します。" }
+  },
+  12: { 
+    t: "ぶっとびオーバークロックCPU姉さん", chara: "ぶっとびオーバークロックCPU姉さん", id: 12,
+    d: "桁違いのパッションと熱量で、チーム全体を一気に巻き込んでプロジェクトをゴールまで押し上げる爆熱マシン。", 
+    sumD: "👉 【結論：チームを巻き込みゴールへ突き進む爆熱パッションマシン】",
+    b: "余ったエネルギーの逃げ道がないと、自らの熱量でオーバークロックを起こし、周囲を焼き払って自爆する。", 
+    sumB: "👉 【警告：エネルギーの逃げ場がないと熱暴走で周囲を焼き払い自爆】",
+    p: "燃え尽き症候群に気をつけつつ、短期決戦の炎上案件の鎮火に投入する。",
+    sumP: "👉 【対策：燃え尽きに配慮しつつ短期決戦の炎上案件鎮火に投入】",
+    l: {
+      male: "好きになったら最後、強烈な熱量で相手を圧倒する爆熱ラブ。サプライズや情熱的なアプローチで相手をメロメロにします。",
+      female: "恋に落ちると爆発的なパッションですべてを捧げる情熱のロマンチスト。ドラマチックで激しい恋を好みますが、熱すぎて相手が少しタジタジになることも。"
+    },
+    sumL: "👉 【恋愛判定：強烈な熱量ですべてを捧げるドラマチックな爆熱ラブ】",
+    marriage: {
+      male: "家族イベントや誕生日には世界一派手なサプライズを仕掛け、家中を熱気と笑いで渦巻かせるエネルギッシュでアツいパパ。",
+      female: "毎日がドラマのようにエキサイティングで賑やかな家庭を築く情熱的なママ。退屈やマンネリとは無縁の爆熱ライフを家族に届けます。"
+    },
+    sumMarriage: "👉 【設計判定：退屈とマンネリを焼き払うエキサイティング爆熱ライフ】",
+    work: {
+      male: "大炎上しているプロジェクトに投入されると、圧倒的な馬力と徹夜のパッションで一気に鎮火させてしまう伝説のトラブルシューター。",
+      female: "「やるなら今しかない！」と爆発的なエネルギーで新規事業や大舞台を成功へと導く、チームの起爆剤となる無敵のモンスターワーカー。"
+    },
+    sumWork: "👉 【適職判定：大炎上プロジェクトを徹夜のパッションで一気に鎮火】",
+    moneySense: {
+      male: "「これだ！」と思った推し活や趣味、ハイリスクな投資に全財産をブッパして一喜一憂するスリリングな金運。一瞬で大金を得ることもあればゼロになるロマン型。",
+      female: "欲しいと思った瞬間に全リソースを一点集中で投入する衝動買いの天才。貯金よりも「今、心が震える体験」にお金を全額ベットするハイパルス財務。"
+    },
+    sumMoneySense: "👉 【財務判定：今心が震える体験へ全額ブッパするハイパルス財務】",
+    m: "推し活や趣味、ハイリスクな投資に全財産をブッパして一喜一憂するスリリングな金運。一瞬で大金を得ることもあればゼロになるロマン型。",
+    sumM: "👉 【金運判定：一獲千金とロマンにかけるスリリングなブッパ金運】",
+    repair: "フル回転しすぎて突然の熱暴走（ヒートアップ）を起こし、周りを焼き払ってしまう前に、「時には冷水クーラーでCPUを冷やす（完全オフの休息）」の強制終了コマンドが絶対必要。",
+    sumRepair: "👉 【パッチ判定：熱暴走を防ぐための完全オフ強制終了休息コマンド】",
+    relation: {
+      male: "【好きな人・恋人・パートナーとして】愛情表現が激アツで退屈しませんが、エネルギーが強すぎて少し疲れることも。適度に相槌を打って受け止めてあげて。\n【上司・同僚として】炎上案件を一人で解決してくれる頼もしい特攻隊長。ただし勢い余って周囲を巻きすぎるので、ブレーキ役をつけてあげると最強。",
+      female: "【好きな人・恋人・パートナーとして】愛が爆発していて最高にドラマチックですが、ヤキモチや情熱の温度差に気をつけて。全力で愛を返してあげましょう。\n【上司・同僚として】圧倒的な熱量で引っ張ってくれますが、エネルギーが切れると急に燃え尽きません。頑張りすぎているときは強制的に休ませてあげて。"
+    },
+    sumRelation: "👉 【トリセツ判定：激アツ愛情を受け止め燃え尽き時は強制休息】",
+    compatibility: { goodId: 4, goodName: "マッハ・スプリンターちゃん", goodText: "お互いのパッションとスピード感が完全に合致し、誰も追いつけないほどの爆速で世界を駆け抜けることができます。", badId: 7, goodName: "重厚メインフレームさん", badText: "相手の慎重でスローなペースや「石橋を叩く姿勢」がもどかしくてイライラが爆発します。" }
+  }
+};
+
+// ★ マイナ様のお告げ（12種類）
+const luckyItems = [
+  {
+    name: "癒やしの香りのアロマキャンドル",
+    message: "「エラーログ（今日のストレス）で燃え尽きた心に効くお告げよ。このキャンドルを焚くと、あなたの運気サーバーが強制再起動する仕組みになっているわ。」",
+    url: "https://www.amazon.co.jp/s?k=アロマキャンドル+おしゃれ" 
+  },
+  {
+    name: "開運お守り星型キーホルダー",
+    message: "「カバンにこれをつけておくだけで、日常の小さなバグや嫌なエラーを綺麗にスルーできる魔法のパッチアイテムよ。」",
+    url: "https://www.amazon.co.jp/s?k=星型+キーホルダー+かわいい"
+  },
+  {
+    name: "もふもふ猫ちゃんのスマホリング",
+    message: "「スマホの落下バグを完全に防ぐ、マイナ様お墨付きの可愛いお守り。いつでもどこでも肉球に癒やされてちょうだい！」",
+    url: "https://www.amazon.co.jp/s?k=スマホリング+猫+かわいい"
+  },
+  {
+    name: "ご褒美リラックス入浴剤（バスボム）",
+    message: "「今日のシステム稼働お疲れ様！お風呂にこれをブチ込めば、全身のメモリが極上の香りで綺麗にリフレッシュされる仕様よ。」",
+    url: "https://www.amazon.co.jp/s?k=バスボム+プレゼント+おしゃれ"
+  },
+  {
+    name: "キラキラ輝くミニLEDミラー",
+    message: "「あなたのステータス画面（お顔）の解像度を爆上げしてくれる高精度ミラーよ。自分へのメンテナンスは英知の基本ね。」",
+    url: "https://www.amazon.co.jp/s?k=コンパクトミラー+LED+かわいい"
+  },
+  {
+    name: "開運パステルヘアクリップ",
+    message: "「前髪の乱れは思考の乱れ！この可愛いクリップで不要なノイズをサクッと留めて、処理効率を最大化させてあげて。」",
+    url: "https://www.amazon.co.jp/s?k=ヘアクリップ+韓国風+かわいい"
+  },
+  {
+    name: "香水風おしゃれハンドクリーム",
+    message: "「乾燥した指先は運気ダウンのバグの原因よ。極上の香りで潤いパッチを当てて、周囲の好感度ネットワークを接続して。」",
+    url: "https://www.amazon.co.jp/s?k=ハンドクリーム+おしゃれ+プレゼント"
+  },
+  {
+    name: "肉球デザインのマウスパッド",
+    message: "「日々のクリック作業で疲れた手首に、プニプニの肉球バッファを搭載してあげるわ。これで作業効率も倍増間違いなしね！」",
+    url: "https://www.amazon.co.jp/s?k=肉球+マウスパッド+かわいい"
+  },
+  {
+    name: "水晶のミニ浄化インテリア",
+    message: "「お部屋のネガティブなエラーログをクリーンに浄化する天然石のミニオブジェよ。マイナ様の神殿とお揃いの開運インテリアね。」",
+    url: "https://www.amazon.co.jp/s?k=水晶+原石+インテリア+おしゃれ"
+  },
+  {
+    name: "ふわふわ雲型ミニポーチ",
+    message: "「細かいガジェットやリップのデータを綺麗に収納する雲型ポーチよ。持ち歩くだけで運気サーバーがふんわり軽くなるわ。」",
+    url: "https://www.amazon.co.jp/s?k=メイクポーチ+雲型+かわいい"
+  },
+  {
+    name: "星屑ラメ入りボールペン",
+    message: "「手書きのメモやタスクリストを書き記すための魔法のペン。持っているだけで日々のドキュメント作成がはかどる仕様よ。」",
+    url: "https://www.amazon.co.jp/s?k=可愛いボールペン+キラキラ"
+  },
+  {
+    name: "開運フォーチュン・ミニノート",
+    message: "「ひらめいたアイデアやバグ対策を書き留めるための神聖なノート。あなたの日常を素敵な物語にコンパイルしてちょうだい。」",
+    url: "https://www.amazon.co.jp/s?k=可愛いノート+おしゃれ"
+  }
+];
+
+// ★ 日付 ＋ シード値（誕生日）で今日一日固定のアイテムを決定する関数
+function getTodayItem(seedValue) {
+  const today = new Date();
+  const dateString = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+  
+  let hash = 0;
+  const combined = dateString + String(seedValue);
+  for (let i = 0; i < combined.length; i++) {
+    hash = (hash << 5) - hash + combined.charCodeAt(i);
+    hash |= 0;
+  }
+  
+  const index = Math.abs(hash) % luckyItems.length;
+  return luckyItems[index];
+}
+
+// ★ 相性先（個別詳細ページ）
+function openCharacterDetailTab(charaId) {
+  let baseData = database[charaId];
+  if (!baseData) return;
+
+  let newTab = window.open('', '_blank');
+  if (!newTab) {
+    alert("ポップアップがブロックされました。新しいタブを開く許可をしてください。");
+    return;
+  }
+
+  let neutralLove = "【コミット・連携プロトコル】\nお互いの領域と自立心を尊重し合うオープンな関係性を構築することで、最も安定したパフォーマンスを発揮します。適度な距離感とリスペクトが長期的な信頼関係を生み出します。";
+  let neutralMarriage = "【ライフプラン・チーム運営設計】\n家庭やチームという共同インフラにおいて、それぞれの役割分担と効率化をスマートに図ります。お互いの未来のビジョンを共有し合える最高のバディ関係を築けます。";
+  let neutralWork = "【ワークスタイル・シナジー】\n個々の得意領域を最大限に活かし合えるアジャイルな環境で最大の成果を出します。オープンなコミュニケーションと明確なゴール設定が円滑な連携の鍵です。";
+  let neutralMoney = "【リソース・財務管理シナジー】\n合理的な投資と堅実なバックアップのバランスを重視します。無駄なリソース消費を防ぎつつ、お互いの成長につながる価値ある分野へスマートに配分します。";
+  let neutralRelation = "【チーム連携のトリセツ】\n相手の持ち味や基本アーキテクチャの特性を深く理解し、過度な干渉を避けることで、あらゆるプロジェクトや日常の連携がスムーズに進行します。";
+
+  let htmlContent = `
+    <!DOCTYPE html>
+    <html lang="ja">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>キャラクター仕様書: ${baseData.chara} 🍬 ぽよぽよシステム</title>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap');
+        body {
+          background: linear-gradient(180deg, #ffbfe0 0%, #d8b5ff 100%);
+          min-height: 100vh;
+          color: #594a63;
+          font-family: 'M PLUS Rounded 1c', sans-serif;
+          margin: 0;
+          padding: 20px 10px;
+          display: flex;
+          justify-content: center;
+          align-items: flex-start;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          text-rendering: optimizeLegibility;
+        }
+        .container {
+          max-width: 640px;
+          width: 100%;
+          background: rgba(255, 255, 255, 0.96);
+          border-radius: 36px;
+          padding: 24px 18px;
+          box-shadow: 0 15px 35px rgba(162, 114, 219, 0.3);
+          border: 4px dashed #ffb3d9;
+          box-sizing: border-box;
+        }
+        .boss-card { background: #fff; border-radius: 26px; padding: 10px; }
+        .main-chara-img-box {
+          width: 100%; max-height: 240px; overflow: hidden;
+          border-radius: 16px; border: 2px solid #ffbfe0;
+          margin-bottom: 14px; background: #fff5f8;
+          display: flex; justify-content: center; align-items: center;
+        }
+        .main-chara-img-box img { width: 100%; height: auto; object-fit: cover; }
+        .spec-header { text-align: center; border-bottom: 2px dashed #f0c5e3; padding-bottom: 14px; margin-bottom: 16px; }
+        .born-badge { display: inline-flex; align-items: center; gap: 4px; background: #fff0f7; border: 2px solid #ffbfe0; color: #d63384; font-size: 0.85rem; font-weight: 800; padding: 6px 12px; border-radius: 20px; margin-bottom: 6px; }
+        .spec-title { font-size: 1.4rem; font-weight: 800; color: #633386; margin-top: 6px; }
+        .spec-section { background: #faf6ff; border-radius: 16px; padding: 14px 16px; margin-bottom: 14px; border-left: 6px solid #cbb4ff; }
+        .spec-section.bug { background: #fff5f6; border-left-color: #ff9aa2; }
+        .spec-section.protocol { background: #f2fbf5; border-left-color: #85e3a5; }
+        .spec-section.love { background: #fff0f5; border-left-color: #ff75ac; }
+        .spec-section.marriage { background: #f0f8ff; border-left-color: #70a1ff; }
+        .spec-section.work { background: #fcf4dd; border-left-color: #e58e26; }
+        .spec-section.money-sense { background: #eef9f5; border-left-color: #2ed573; }
+        .spec-section.money { background: #fffdf0; border-left-color: #f1c40f; }
+        .spec-section.repair { background: #fbeedb; border-left-color: #ff7f50; }
+        .spec-section.relation { background: #fceef8; border-left-color: #ff6b81; }
+        .spec-label { font-size: 0.98rem; font-weight: 800; color: #7242a5; margin-bottom: 8px; }
+        .spec-content { font-size: 1.05rem; line-height: 1.8; color: #4a3b54; font-weight: 500; white-space: pre-line; }
+        .summary-badge {
+          display: block;
+          background: rgba(255, 255, 255, 0.85);
+          border: 2px dashed #ff9ac9;
+          color: #d93d7a;
+          font-size: 0.95rem;
+          font-weight: 800;
+          padding: 8px 12px;
+          border-radius: 12px;
+          margin-top: 10px;
+          text-align: center;
+          box-shadow: 0 2px 6px rgba(255, 183, 213, 0.2);
+        }
+        .close-btn {
+          background: linear-gradient(180deg, #ff94c2 0%, #ff5e9c 100%);
+          color: #fff; border: none; padding: 16px 20px; font-size: 1.1rem; font-weight: 800;
+          border-radius: 25px; cursor: pointer; width: 100%; margin-top: 20px; text-align: center;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="boss-card">
+          <div class="main-chara-img-box">
+            <img src="m${charaId}.jpg" alt="${baseData.chara}" onerror="this.style.display='none'">
+          </div>
+          <div class="spec-header">
+            <div class="born-badge"><span>🍓</span><span>図鑑データ・個別仕様書 (共通ニュートラル版)</span></div>
+            <div class="spec-title">${baseData.chara}</div>
+          </div>
+          <div class="spec-section"><div class="spec-label">🍇 [基本アーキテクチャ]</div><div class="spec-content">${baseData.d}</div><div class="summary-badge">${baseData.sumD}</div></div>
+          <div class="spec-section bug"><div class="spec-label">💥 [バグ・オーバーヒート条件]</div><div class="spec-content">${baseData.b}</div><div class="summary-badge">${baseData.sumB}</div></div>
+          <div class="spec-section protocol"><div class="spec-label">🍼 [なかよし運用プロトコル]</div><div class="spec-content">${baseData.p}</div><div class="summary-badge">${baseData.sumP}</div></div>
+          <div class="spec-section love"><div class="spec-label">💖 [コミット・連携プロトコル]</div><div class="spec-content">${neutralLove}</div><div class="summary-badge">👉 【連携判定：お互いの領域を尊重し合うオープン関係】</div></div>
+          <div class="spec-section marriage"><div class="spec-label">💍 [ライフプラン・チーム運営]</div><div class="spec-content">${neutralMarriage}</div><div class="summary-badge">👉 【チーム判定：役割分担と効率化を図る最高バディ】</div></div>
+          <div class="spec-section work"><div class="spec-label">💻 [ワークスタイル・シナジー]</div><div class="spec-content">${neutralWork}</div><div class="summary-badge">👉 【シナジー判定：アジャイルな環境で最大の成果を発揮】</div></div>
+          <div class="spec-section money-sense"><div class="spec-label">📊 [リソース・財務管理]</div><div class="spec-content">${neutralMoney}</div><div class="summary-badge">👉 【財務判定：合理的な投資と堅実なバックアップの融合】</div></div>
+          <div class="spec-section money"><div class="spec-label">🪙 [マネー・インフラ運]</div><div class="spec-content">${baseData.m}</div><div class="summary-badge">${baseData.sumM}</div></div>
+          <div class="spec-section repair"><div class="spec-label">🛠️ [自己改善パッチ]</div><div class="spec-content">${baseData.repair}</div><div class="summary-badge">${baseData.sumRepair}</div></div>
+          <div class="spec-section relation"><div class="spec-label">💌 [チーム連携のトリセツ]</div><div class="spec-content">${neutralRelation}</div><div class="summary-badge">👉 【トリセツ判定：特性の深い理解と過度な干渉の回避】</div></div>
+          
+          <button class="close-btn" onclick="window.close()">✖ このタブを閉じる</button>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  newTab.document.write(htmlContent);
+  newTab.document.close();
+}
+
+// ★ ホーム画面の図鑑カタログ生成
+function renderCatalog() {
+  const list = document.getElementById('catalogList');
+  list.innerHTML = "";
+  for (let id = 1; id <= 12; id++) {
+    let charaData = database[id];
+    let normImg = "m" + id + ".jpg";
+    let fullImg = "m" + id + ".jpg";
+
+    let item = document.createElement('div');
+    item.className = 'catalog-item';
+    item.innerHTML = `
+      <div class="catalog-thumb-wrapper">
+        <img src="${normImg}" class="catalog-thumb" alt="${charaData.chara}" onerror="this.style.display='none'">
+        <img src="${fullImg}" class="preview-popup" alt="拡大プレビュー" onerror="this.style.display='none'">
+      </div>
+      <div class="catalog-info">
+        <div class="catalog-name">NO.${id} ${charaData.chara}</div>
+        <div class="catalog-desc">${charaData.d}</div>
+      </div>
+    `;
+    list.appendChild(item);
+  }
+}
+
+// 最初の画面に戻る関数
+function resetToHome() {
+  document.getElementById('result').style.display = "none";
+  document.getElementById('mosaicBg').innerHTML = "";
+
+  const mascotBox = document.getElementById('inlineMascot');
+  if (mascotBox) mascotBox.style.display = "block";
+
+  const catalogBox = document.querySelector('.catalog-section');
+  if (catalogBox) catalogBox.style.display = "block";
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 診断実行関数
+function diagnose() {
+  if (!isBgmPlaying) startBGM();
+  playDeploySound();
+
+  let targetDate = null;
+  let seedKey = "";
+  if (currentMode === 'date') {
+    const val = document.getElementById('birthDate').value;
+    if (!val) { alert("たんじょうびをえらんでね！"); return; }
+    targetDate = parseInputToDate(val);
+    seedKey = val;
+  } else {
+    const val = document.getElementById('birthText').value;
+    if (!val) { alert("和暦（例: 昭和60年2月22日）を入力してね！"); return; }
+    targetDate = parseInputToDate(val);
+    seedKey = val;
+  }
+
+  if (!targetDate || isNaN(targetDate.getTime())) {
+    alert("日付の読み込みに失敗しました。正しい形式で入力してね！");
+    return;
+  }
+
+  const mascotBox = document.getElementById('inlineMascot');
+  if (mascotBox) mascotBox.style.display = "none";
+
+  const catalogBox = document.querySelector('.catalog-section');
+  if (catalogBox) catalogBox.style.display = "none";
+
+  const kanshiNo = getKanshiNoFromDate(targetDate, selectedGender);
+  const data = getDatabaseData(kanshiNo, selectedGender);
+
+  // ★ マイナ様のお告げ（日付＋シード値固定）を生成してセット
+  const luckyItem = getTodayItem(seedKey);
+  document.getElementById('minaiMessage').innerText = luckyItem.message;
+  document.getElementById('minaiLink').href = luckyItem.url;
+  document.getElementById('minaiLink').innerText = `🛒 ${luckyItem.name} をAmazonで見る（開運）`;
+
+  showCharacterDetailWithAttribute(kanshiNo, data);
+}
+
+// 現在表示されているキャラクターの画像切り替え用変数
+let currentMainImgA = "";
+let currentMainImgB = "";
+let isImgToggled = false;
+
+function toggleMainImage() {
+  const imgElem = document.getElementById('mainCharaImage');
+  if (!currentMainImgA || !currentMainImgB) return;
+  isImgToggled = !isImgToggled;
+  imgElem.src = isImgToggled ? currentMainImgB : currentMainImgA;
+}
+
+function showCharacterDetailWithAttribute(kanshiNo, data) {
+  const mainImgElem = document.getElementById('mainCharaImage');
+  const mainImgBox = document.getElementById('mainImgBox');
+  
+  let animalIndex = ((kanshiNo - 1) % 12) + 1;
+  
+  // ★ 属性 (a, b, c, d, e) とサブ画像の正確なペアリング対応 (a=1, b=2, c=3, d=4, e=5)
+  const attrMap = { 'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5 };
+  let pairNo = attrMap[data.attrChar] || 1;
+
+  currentMainImgA = data.mainImg; // 例: 1a.jpg
+  currentMainImgB = animalIndex + "-" + pairNo + ".jpg"; // 例: aなら 1-1.jpg, bなら 1-2.jpg
+  isImgToggled = false;
+
+  if (currentMainImgA) {
+    mainImgElem.src = currentMainImgA;
+    mainImgBox.style.display = "flex";
+  } else {
+    mainImgBox.style.display = "none";
+  }
+
+  // ★ 結果画面下のギャラリー（今のペア以外の残りの4つのサブ画像を表示。タップで拡大モーダルが開く仕様）
+  const variantGrid = document.getElementById('variantGrid');
+  variantGrid.innerHTML = "";
+  
+  // タイプ名と属性説明（1〜5に対応。今のタイプ以外の4枚に表示する）
+  const typeInfo = {
+    "1": {
+      label: "タイプ ファイアリー\n（熱暴走チーク系）",
+      name: "タイプ ファイアリー",
+      nick: "熱暴走チーク系",
+      icon: "🔥",
+      mean: "処理能力の限界を超えてCPUが激熱。テンションもチークの濃さも限界突破。",
+      trait: "テンション高め、情熱的、行動力バツグン。"
+    },
+    "2": {
+      label: "タイプ シャドウ\n（おやすみバックグラウンド系）",
+      name: "タイプ シャドウ",
+      nick: "おやすみバックグラウンド系",
+      icon: "🌙",
+      mean: "画面の裏側（バックグラウンド）で静かに動いているプロセス。",
+      trait: "秘密主義、裏で支える、ミステリアス。"
+    },
+    "3": {
+      label: "タイプ ヒカリ\n（バックライト全開ガール系）",
+      name: "タイプ ヒカリ",
+      nick: "バックライト全開ガール系",
+      icon: "✨",
+      mean: "画面の輝度は常にマックス。圧倒的な存在感とまばゆさ。",
+      trait: "主役気質で華やか、どこかで見られているようなキラキラ感。"
+    },
+    "4": {
+      label: "タイプ アノマリー\n（未定義テイストのパフェ系）",
+      name: "タイプ アノマリー",
+      nick: "未定義テイストのパフェ系",
+      icon: "🍬",
+      mean: "既存の仕様書が一切通用しない予測不能な存在。常識の斜め上。",
+      trait: "型にハマらない自由奔放さ、予測不能な面白さや個性。"
+    },
+    "5": {
+      label: "タイプ アブソリュートゼロ\n（冷却ファン音がブーン系）",
+      name: "タイプ アブソリュートゼロ",
+      nick: "冷却ファン音がブーン系",
+      icon: "❄️",
+      mean: "表面はクールで静まり返っているように見えるが、内部で負荷の高いタスクを処理するために冷却ファンが全開でうなっている状態。",
+      trait: "マイペースでクール、一見冷たそうだけど実は人知れず一番フル稼働で踏ん張っている苦労人。職人肌。"
+    }
+  };
+
+  let subFiles = ["1", "2", "3", "4", "5"].map(no => ({
+    no: no,
+    file: animalIndex + "-" + no + ".jpg",
+    label: typeInfo[no].label
+  }));
+
+  let targetSubFile = animalIndex + "-" + pairNo + ".jpg";
+  let filteredSubs = subFiles.filter(item => item.file !== targetSubFile);
+
+  filteredSubs.forEach(sub => {
+    let div = document.createElement('div');
+    div.className = 'variant-item';
+    // タップ または クリック で拡大モーダルを開く
+    div.onclick = () => openImageModal(sub.file, sub.label);
+    div.innerHTML = `
+      <img src="${sub.file}" class="variant-thumb" alt="${sub.label}" onerror="this.style.display='none'">
+      <div class="variant-label">${sub.label}</div>
+    `;
+    variantGrid.appendChild(div);
+  });
+
+  // 結果の子の属性説明は、名前の下の属性タグの直後に置く
+  const mine = typeInfo[String(pairNo)];
+  document.getElementById('resultAttrDesc').innerHTML = `
+    <p class="result-attr-mean">${mine.mean}</p>
+    <p class="result-attr-trait">${mine.trait}</p>
+  `;
+
+  // 下の紹介は、ギャラリーに出している4タイプだけ
+  const typeGuideList = document.getElementById('typeGuideList');
+  typeGuideList.innerHTML = "";
+  filteredSubs.forEach(sub => {
+    const info = typeInfo[sub.no];
+    const card = document.createElement('div');
+    card.className = 'type-guide-item tone-' + sub.no;
+    card.innerHTML = `
+      <div class="type-guide-head">
+        <div class="type-guide-name">${info.icon} ${info.name}</div>
+        <span class="type-guide-nick">${info.nick}</span>
+      </div>
+      <p class="type-guide-mean">${info.mean}</p>
+      <p class="type-guide-trait">${info.trait}</p>
+    `;
+    typeGuideList.appendChild(card);
+  });
+
+  renderMosaicBackground(data.subImages);
+
+  document.getElementById('boss-no').innerText = "🍓 NO." + ("0" + kanshiNo).slice(-2);
+  document.getElementById('boss-kanshi').innerText = mine.name;
+  document.getElementById('boss-attr-tag').innerText = mine.icon + " " + mine.nick;
+
+  document.getElementById('boss-sub').innerText = baseDataOrFallback(kanshiNo).t;
+  document.getElementById('boss-title').innerText = data.chara;
+
+  document.getElementById('boss-desc').innerText = data.d;
+  document.getElementById('sum-desc').innerText = data.sumD;
+
+  document.getElementById('boss-bug').innerText = data.b;
+  document.getElementById('sum-bug').innerText = data.sumB;
+
+  document.getElementById('boss-protocol').innerText = data.p;
+  document.getElementById('sum-protocol').innerText = data.sumP;
+
+  document.getElementById('boss-love').innerText = data.l;
+  document.getElementById('sum-love').innerText = data.sumL;
+
+  document.getElementById('boss-marriage').innerText = data.marriage;
+  document.getElementById('sum-marriage').innerText = data.sumMarriage;
+
+  document.getElementById('boss-work').innerText = data.work;
+  document.getElementById('sum-work').innerText = data.sumWork;
+
+  document.getElementById('boss-money-sense').innerText = data.moneySense;
+  document.getElementById('sum-money-sense').innerText = data.sumMoneySense;
+
+  document.getElementById('boss-money').innerText = data.m;
+  document.getElementById('sum-money').innerText = data.sumM;
+
+  document.getElementById('boss-repair').innerText = data.repair;
+  document.getElementById('sum-repair').innerText = data.sumRepair;
+
+  document.getElementById('boss-relation').innerText = data.relation;
+  document.getElementById('sum-relation').innerText = data.sumRelation;
+  
+  document.getElementById('compatibilitySection').style.display = "block";
+
+  let baseData = database[((kanshiNo - 1) % 12) + 1];
+  let goodImgSrc = "m" + baseData.compatibility.goodId + ".jpg";
+  let badImgSrc = "m" + baseData.compatibility.badId + ".jpg";
+
+  let compHtml = `
+    <div class="compat-card-container">
+      <div class="compat-item good" onclick="openCharacterDetailTab(${baseData.compatibility.goodId})" title="クリックして新しいタブでこのキャラの仕様書を開く">
+        <img src="${goodImgSrc}" class="compat-img" alt="${baseData.compatibility.goodName}" onerror="this.style.display='none'">
+        <div class="compat-title">🌟 相性の良いキャラクター：${baseData.compatibility.goodName} (新しいタブで詳細を開く)</div>
+        <div class="compat-desc">👉 ${baseData.compatibility.goodText}</div>
+      </div>
+      <div class="compat-item bad" onclick="openCharacterDetailTab(${baseData.compatibility.badId})" title="クリックして新しいタブでこのキャラの仕様書を開く">
+        <img src="${badImgSrc}" class="compat-img" alt="${baseData.compatibility.badName}" onerror="this.style.display='none'">
+        <div class="compat-title">⚠️ 相性が少しピリつくキャラクター：${baseData.compatibility.badName} (新しいタブで詳細を開く)</div>
+        <div class="compat-desc">👉 ${baseData.compatibility.badText}</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('boss-compatibility').innerHTML = compHtml;
+
+  document.getElementById('result').style.display = "block";
+  window.scrollTo({ top: 100, behavior: 'smooth' });
+}
+
+function baseDataOrFallback(kanshiNo) {
+  let animalIndex = ((kanshiNo - 1) % 12) + 1;
+  return database[animalIndex];
+}
+
+function renderMosaicBackground(subImages) {
+  const bgContainer = document.getElementById('mosaicBg');
+  bgContainer.innerHTML = "";
+
+  let tilePool = [];
+  for (let i = 0; i < 3; i++) {
+    tilePool = tilePool.concat(subImages);
+  }
+  tilePool.sort(() => Math.random() - 0.5);
+
+  tilePool.slice(0, 12).forEach(imgSrc => {
+    const tile = document.createElement('div');
+    tile.className = 'mosaic-tile';
+    tile.style.backgroundImage = `url('${imgSrc}')`;
+    bgContainer.appendChild(tile);
+  });
+}
+
+function parseInputToDate(val) {
+  val = val.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    const parts = val.split("-");
+    return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+  }
+
+  let eraOffset = 0;
+  if (val.includes("明治") || val.startsWith("M")) { eraOffset = 1868; }
+  else if (val.includes("大正") || val.startsWith("T")) { eraOffset = 1911; }
+  else if (val.includes("昭和") || val.startsWith("S")) { eraOffset = 1925; }
+  else if (val.includes("平成") || val.startsWith("H")) { eraOffset = 1988; }
+  else if (val.includes("令和") || val.startsWith("R")) { eraOffset = 2018; }
+
+  if (eraOffset > 0) {
+    val = val.replace("元年", "1");
+    const matches = val.match(/\d+/g);
+    if (matches && matches.length > 0) {
+      let yearNum = parseInt(matches[0], 10);
+      let year = eraOffset + yearNum - 1;
+      let month = matches.length > 1 ? parseInt(matches[1], 10) : 1;
+      let day = matches.length > 2 ? parseInt(matches[2], 10) : 1;
+      return new Date(year, month - 1, day);
+    }
+  }
+
+  if (/^\d{4}$/.test(val)) {
+    return new Date(parseInt(val, 10), 0, 1);
+  }
+
+  const generalMatch = val.match(/(\d{4})[^\d]+(\d{1,2})[^\d]+(\d{1,2})/);
+  if (generalMatch) {
+    return new Date(parseInt(generalMatch[1], 10), parseInt(generalMatch[2], 10) - 1, parseInt(generalMatch[3], 10));
+  }
+
+  return null;
+}
+
+function getKanshiNoFromDate(targetDate, gender) {
+  const baseDate = new Date(1985, 1, 22, 0, 0, 0);
+  const diffTime = targetDate.getTime() - baseDate.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  let idx = (11 + diffDays) % 60;
+  if (idx < 0) idx += 60;
+
+  if (gender === 'female') {
+    idx = (60 - idx) % 60;
+  }
+
+  return idx + 1;
+}
+
+let currentMode = 'date';
+function switchMode(mode, e) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(btn => btn.classList.remove('active'));
+  e.target.classList.add('active');
+
+  document.getElementById('group-date').classList.remove('active');
+  document.getElementById('group-text').classList.remove('active');
+
+  if (mode === 'date') {
+    document.getElementById('group-date').classList.add('active');
+  } else {
+    document.getElementById('group-text').classList.add('active');
+  }
+}
+
+let audioCtx = null;
+let isBgmPlaying = false;
+let bgmTimer = null;
+let step = 0;
+
+const melodyNotes = [
+  523.25, 659.25, 783.99, 1046.50,
+  880.00, 783.99, 659.25, 587.33,
+  523.25, 783.99, 880.00, 1046.50,
+  1174.66, 1046.50, 880.00, 783.99
+];
+
+const bassNotes = [
+  261.63, 0, 392.00, 0,
+  220.00, 0, 329.63, 0,
+  174.61, 0, 261.63, 0,
+  196.00, 0, 392.00, 0
+];
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+function playXylophone(freq, time, volume = 0.04) {
+  if (!freq || !audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(freq, time);
+  gain.gain.setValueAtTime(volume, time);
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.18);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start(time);
+  osc.stop(time + 0.18);
+}
+
+function playBass(freq, time) {
+  if (!freq || !audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(freq, time);
+  gain.gain.setValueAtTime(0.06, time);
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.22);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start(time);
+  osc.stop(time + 0.22);
+}
+
+function loopStep() {
+  if (!isBgmPlaying || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  playXylophone(melodyNotes[step % melodyNotes.length], now, 0.045);
+  const bFreq = bassNotes[step % bassNotes.length];
+  if (bFreq > 0) playBass(bFreq, now);
+  step++;
+  bgmTimer = setTimeout(loopStep, 210);
+}
+
+function startBGM() {
+  initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (!isBgmPlaying) {
+    isBgmPlaying = true;
+    document.getElementById("bgm-status").innerText = "再生中♪";
+    document.querySelector(".bgm-toggle-btn").innerText = "停止";
+    loopStep();
+  }
+}
+
+function stopBGM() {
+  isBgmPlaying = false;
+  if (bgmTimer) clearTimeout(bgmTimer);
+  document.getElementById("bgm-status").innerText = "停止中";
+  document.querySelector(".bgm-toggle-btn").innerText = "再生";
+}
+
+function toggleBGM(e) {
+  if (e) e.stopPropagation();
+  if (isBgmPlaying) stopBGM();
+  else startBGM();
+}
+
+window.addEventListener("click", () => {
+  if (!audioCtx || audioCtx.state === "suspended") startBGM();
+}, { once: true });
+
+function playDeploySound() {
+  if (!audioCtx) initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((f, i) => {
+    setTimeout(() => playXylophone(f, audioCtx.currentTime, 0.07), i * 50);
+  });
+}
+
+function getDatabaseData(no, gender) {
+  let animalIndex = ((no - 1) % 12) + 1;
+  let attrIndex = Math.floor((no - 1) / 12);
+  const attrChars = ['a', 'b', 'c', 'd', 'e'];
+  let attrChar = attrChars[attrIndex] || 'a';
+
+  let baseData = database[animalIndex];
+  let flavorObj = attributeFlavors[attrChar] || attributeFlavors['a'];
+  let loveText = (baseData.l && baseData.l[gender]) ? baseData.l[gender] : baseData.l.male;
+  let sumLoveText = (baseData.sumL) ? baseData.sumL : "👉 【恋愛判定：コミット条件を満たしてデプロイ完了】";
+  
+  let marriageText = (baseData.marriage && typeof baseData.marriage === 'object') ? (baseData.marriage[gender] || baseData.marriage.male) : baseData.marriage;
+  let sumMarriageText = (baseData.sumMarriage) ? baseData.sumMarriage : "👉 【設計判定：安定したライフプラン設計】";
+
+  let workText = (baseData.work && typeof baseData.work === 'object') ? (baseData.work[gender] || baseData.work.male) : baseData.work;
+  let sumWorkText = (baseData.sumWork) ? baseData.sumWork : "👉 【適職判定：アジャイルな環境で最大の成果を発揮】";
+
+  let moneySenseText = (baseData.moneySense && typeof baseData.moneySense === 'object') ? (baseData.moneySense[gender] || baseData.moneySense.male) : baseData.moneySense;
+  let sumMoneySenseText = (baseData.sumMoneySense) ? baseData.sumMoneySense : "👉 【財務判定：効率的なリソース管理と自己投資】";
+
+  let combinedDesc = baseData.d + flavorObj.flavor;
+
+  return {
+    k: "干支" + no,
+    t: baseData.t,
+    mainImg: animalIndex + attrChar + ".jpg", 
+    attrChar: attrChar,
+    flavorName: flavorObj.name,
+    subImages: [
+      animalIndex + "-1.jpg",
+      animalIndex + "-2.jpg",
+      animalIndex + "-3.jpg",
+      animalIndex + "-4.jpg",
+      animalIndex + "-5.jpg"
+    ],
+    chara: baseData.chara,
+    d: combinedDesc,
+    sumD: flavorObj.summary,
+    b: baseData.b,
+    sumB: baseData.sumB,
+    p: baseData.p,
+    sumP: baseData.sumP,
+    l: loveText,
+    sumL: sumLoveText,
+    marriage: marriageText,
+    sumMarriage: sumMarriageText,
+    work: workText,
+    sumWork: sumWorkText,
+    moneySense: moneySenseText,
+    sumMoneySense: sumMoneySenseText,
+    m: baseData.m,
+    sumM: baseData.sumM,
+    repair: baseData.repair,
+    sumRepair: baseData.sumRepair,
+    relation: baseData.relation[gender] || baseData.relation.male,
+    sumRelation: baseData.sumRelation,
+    compatibility: baseData.compatibility
+  };
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  renderCatalog();
+});
+</script>
+
+</body>
+</html>
