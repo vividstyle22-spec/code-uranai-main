@@ -1125,7 +1125,7 @@
     
     <div class="input-mode-tabs">
       <button class="mode-tab active" onclick="switchMode('date', event)">カレンダー選択</button>
-      <button class="mode-tab" onclick="switchMode('text', event)">和暦で入力 (例: 平成元年5月15日)</button>
+      <button class="mode-tab" id="warekiModeTab" onclick="switchMode('text', event)">和暦で入力</button>
     </div>
 
     <div id="group-date" class="input-field-group active">
@@ -1315,14 +1315,41 @@
 </div>
 
 <script>
-// 開いた日の日付を、誕生日入力の初期値にする
+// 西暦の日付を和暦の表記にする（元年は「元」）
+function formatWareki(date) {
+  const eras = [
+    { name: '令和', start: new Date(2019, 4, 1), offset: 2018 },
+    { name: '平成', start: new Date(1989, 0, 8), offset: 1988 },
+    { name: '昭和', start: new Date(1926, 11, 25), offset: 1925 },
+    { name: '大正', start: new Date(1912, 6, 30), offset: 1911 },
+    { name: '明治', start: new Date(1868, 0, 25), offset: 1867 }
+  ];
+  let era = eras[eras.length - 1];
+  for (let i = 0; i < eras.length; i++) {
+    if (date >= eras[i].start) {
+      era = eras[i];
+      break;
+    }
+  }
+  const eraYear = date.getFullYear() - era.offset;
+  const yearLabel = eraYear === 1 ? '元' : String(eraYear);
+  return era.name + yearLabel + '年' + (date.getMonth() + 1) + '月' + date.getDate() + '日';
+}
+
+// 開いた日の日付を、カレンダーと和暦の例の初期値にする
 (function setBirthDateToToday() {
   const input = document.getElementById('birthDate');
-  if (!input) return;
   const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  input.value = now.getFullYear() + '-' + month + '-' + day;
+  if (input) {
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    input.value = now.getFullYear() + '-' + month + '-' + day;
+  }
+  const wareki = formatWareki(now);
+  const warekiInput = document.getElementById('birthText');
+  const warekiTab = document.getElementById('warekiModeTab');
+  if (warekiInput) warekiInput.placeholder = '例: ' + wareki;
+  if (warekiTab) warekiTab.textContent = '和暦で入力 (例: ' + wareki + ')';
 })();
 
 // === ハンバーガーメニューの開閉制御 ===
@@ -2152,7 +2179,7 @@ function diagnose() {
     seedKey = val;
   } else {
     const val = document.getElementById('birthText').value;
-    if (!val) { alert("和暦（例: 昭和60年2月22日）を入力してね！"); return; }
+    if (!val) { alert("和暦（例: " + formatWareki(new Date()) + "）を入力してね！"); return; }
     targetDate = parseInputToDate(val);
     seedKey = val;
   }
@@ -2397,6 +2424,11 @@ function renderMosaicBackground(subImages) {
 
 function parseInputToDate(val) {
   val = val.trim();
+  // 全角数字を半角にして、元年と1年を同じ年として読む
+  val = val.replace(/[０-９]/g, function(ch) {
+    return String.fromCharCode(ch.charCodeAt(0) - 0xFEE0);
+  });
+  val = val.replace(/元年/g, "1年");
   if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
     const parts = val.split("-");
     return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
@@ -2410,7 +2442,6 @@ function parseInputToDate(val) {
   else if (val.includes("令和") || val.startsWith("R")) { eraOffset = 2018; }
 
   if (eraOffset > 0) {
-    val = val.replace("元年", "1");
     const matches = val.match(/\d+/g);
     if (matches && matches.length > 0) {
       let yearNum = parseInt(matches[0], 10);
